@@ -9,6 +9,14 @@ public class ConfigTO {
 	private String password = "testbr01";
 	private String systemId = "71";
 
+	private int pricePoint = 60225;
+	private int productId = 681;
+	private int rollId = 71;
+
+	private static final short PRICE_POINT_TAG = (short) 0x1400;
+	private static final short PRODUCT_ID_TAG = (short) 0x1401;
+	private static final short ROLL_ID_TAG = (short) 0x1402;
+
 	public boolean isAsynchorized() {
 		return isAsynchorized;
 	}
