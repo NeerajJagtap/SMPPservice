@@ -1,12 +1,18 @@
 package com.vuclip.smpp.service.impl;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.logica.smpp.Data;
+import com.logica.smpp.ServerPDUEvent;
 import com.logica.smpp.Session;
+import com.logica.smpp.TimeoutException;
+import com.logica.smpp.WrongSessionStateException;
 import com.logica.smpp.pdu.BindReceiver;
 import com.logica.smpp.pdu.BindRequest;
 import com.logica.smpp.pdu.BindResponse;
@@ -14,15 +20,24 @@ import com.logica.smpp.pdu.BindTransciever;
 import com.logica.smpp.pdu.BindTransmitter;
 import com.logica.smpp.pdu.EnquireLink;
 import com.logica.smpp.pdu.EnquireLinkResp;
+import com.logica.smpp.pdu.PDU;
+import com.logica.smpp.pdu.PDUException;
+import com.logica.smpp.pdu.Request;
+import com.logica.smpp.pdu.Response;
 import com.logica.smpp.pdu.SubmitSM;
 import com.logica.smpp.pdu.SubmitSMResp;
 import com.logica.smpp.pdu.UnbindResp;
+import com.logica.smpp.pdu.ValueNotSetException;
 import com.logica.smpp.pdu.WrongDateFormatException;
 import com.logica.smpp.pdu.WrongLengthOfStringException;
+import com.logica.smpp.pdu.tlv.TLVException;
+import com.logica.smpp.util.ByteBuffer;
+import com.vuclip.smpp.client.CoreSMPPClient;
 import com.vuclip.smpp.service.CoreSMPPService;
 import com.vuclip.smpp.to.ConfigTO;
 import com.vuclip.smpp.to.PDUTO;
 import com.vuclip.smpp.to.SMPPReqTO;
+import com.vuclip.smpp.to.SMPPRespTO;
 import com.vuclip.smpp.util.SMPPPDUEventListener;
 import com.vuclip.smpp.util.SMPPSession;
 
@@ -44,6 +59,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService, Runnable {
 
 	public boolean bind() {
 		try {
+			System.out.println("Bind Start");
 			BindRequest request = null;
 			BindResponse response = null;
 			session = SMPPSession.getInstance(configTO.getIpAddress(), configTO.getPort());
@@ -67,6 +83,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService, Runnable {
 				logger.error(e.getMessage());
 			}
 		}
+		System.out.println("Bind End");
 		return session.isBound();
 
 	}
@@ -94,6 +111,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService, Runnable {
 	}
 
 	public void submit() {
+		System.out.println("Submit SM Start");
 		if (logger.isDebugEnabled()) {
 			logger.debug("SMPPTest.submit()");
 		}
@@ -115,39 +133,62 @@ public class CoreSMPPServiceImpl implements CoreSMPPService, Runnable {
 					logger.debug("Submit response " + response.debugString());
 				}
 				String messageId = response.getMessageId();
-				smppReqTO.setRespStatus(String.valueOf(response.getCommandStatus()));
-
+				SMPPRespTO smppRespTO = new SMPPRespTO();
+				smppRespTO.setRespStatus(response.getCommandStatus());
+				smppRespTO.setResponseId(response.getCommandId());
+				smppRespTO.setResposeMessage(response.getBody().toString());
+				CoreSMPPClient.smppRespQueue.add(smppRespTO);
 			}
-		} catch (Exception e) {
+		} catch (WrongLengthOfStringException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Submit operation failed. " + e);
+			}
+		} catch (ValueNotSetException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Submit operation failed. " + e);
+			}
+		} catch (TimeoutException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Submit operation failed. " + e);
+			}
+		} catch (PDUException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Submit operation failed. " + e);
+			}
+		} catch (WrongSessionStateException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Submit operation failed. " + e);
+			}
+		} catch (IOException e) {
 			if (logger.isErrorEnabled()) {
 				logger.error("Submit operation failed. " + e);
 			}
 		}
-
+		System.out.println("Submit SM End");
 	}
 
 	private void setSubmitParam(SubmitSM request)
-			throws WrongLengthOfStringException, UnsupportedEncodingException, WrongDateFormatException {
+			throws WrongLengthOfStringException, UnsupportedEncodingException, WrongDateFormatException, TLVException {
 		PDUTO pduto = smppReqTO.getPduto();
+		// Set Config Specific Parameters
+		Iterator<Map.Entry<Integer, Integer>> optionalParamMapIterator = configTO.getOptionalParamMap().entrySet()
+				.iterator();
+		while (optionalParamMapIterator.hasNext()) {
+			Map.Entry<Integer, Integer> entry = optionalParamMapIterator.next();
+			request.setExtraOptional((short) entry.getKey().intValue(),
+					new ByteBuffer(java.nio.ByteBuffer.allocate(4).putInt(entry.getValue()).array()));
+		}
+
+		// Set Request SpeceficParameters
 		request.setServiceType(pduto.getServiceType());
 		request.setSourceAddr(pduto.getSourceAddress());
 		request.setDestAddr(pduto.getDestAddress());
 		request.setReplaceIfPresentFlag(pduto.getReplaceIfPresentFlag());
 		request.setShortMessage(pduto.getShortMessage(), Data.ENC_UTF8);
-		String scheduleDeliveryTime = pduto.getScheduleDeliveryTime();
-		if (scheduleDeliveryTime != "" && !scheduleDeliveryTime.equalsIgnoreCase("null"))
-			request.setScheduleDeliveryTime(scheduleDeliveryTime);
-		else {
-			request.setScheduleDeliveryTime(null);
-		}
-		String validityPeriod = pduto.getValidityPeriod();
-		if (validityPeriod != "" && !validityPeriod.equalsIgnoreCase("null")) {
-			request.setValidityPeriod(validityPeriod);
-		} else {
-			request.setValidityPeriod(null);
-		}
+		request.setMessagePayload(new ByteBuffer(pduto.getMessagePayload().getBytes()));
+		request.setScheduleDeliveryTime(pduto.getScheduleDeliveryTime());
+		request.setValidityPeriod(pduto.getValidityPeriod());
 		request.setEsmClass(pduto.getEsmClass());
-		request.setCommandStatus(9);
 		request.setProtocolId(pduto.getProtocolId());
 		request.setPriorityFlag(pduto.getPriorityFlag());
 		request.setRegisteredDelivery(pduto.getRegisteredDelivery());
@@ -210,6 +251,49 @@ public class CoreSMPPServiceImpl implements CoreSMPPService, Runnable {
 
 		}
 		return session.isBound();
+	}
+
+	public SMPPRespTO receiveListener() {
+		try {
+			// Check if session is currently running
+			if (!session.isBound()) {
+				this.bind();
+			}
+			// With Data.RECEIVE_BLOCKING thread will block forever to receive
+			PDU pdu = null;
+			System.out.print("Going to receive a PDU. ");
+			if (configTO.isAsynchorized()) {
+				ServerPDUEvent pduEvent = eventListener.getRequestEvent(Data.RECEIVE_BLOCKING);
+				if (pduEvent != null) {
+					pdu = pduEvent.getPDU();
+				}
+			} else {
+				pdu = session.receive(Data.RECEIVE_BLOCKING);
+			}
+			if (pdu != null) {
+				SMPPRespTO smppRespTO = new SMPPRespTO();
+				System.out.println("Received PDU " + pdu.debugString());
+				if (pdu.isRequest()) {
+					Response response = ((Request) pdu).getResponse();
+					// respond with default response
+					System.out.println("Going to send default response to request " + response.debugString());
+					session.respond(response);
+					smppRespTO.setResposeMessage(response.getBody().toString());
+					smppRespTO.setRespStatus(response.getCommandStatus());
+					smppRespTO.setResponseId(response.getCommandId());
+				} else {
+					smppRespTO.setResposeMessage(pdu.getData().toString());
+					smppRespTO.setRespStatus(pdu.getCommandStatus());
+					smppRespTO.setResponseId(pdu.getCommandId());
+				}
+				return smppRespTO;
+			} else {
+				System.out.println("No PDU received this time.");
+			}
+		} catch (Exception e) {
+			System.out.println("Receiving failed. " + e);
+		}
+		return null;
 	}
 
 	public void run() {

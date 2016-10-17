@@ -1,5 +1,6 @@
 package com.vuclip.smpp.controllers;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import com.logica.smpp.pdu.Address;
 import com.logica.smpp.pdu.WrongLengthOfStringException;
 import com.vuclip.config.SmppConfig;
 import com.vuclip.smpp.client.CoreSMPPClient;
+import com.vuclip.smpp.props.SMPPPropertyConfig;
 import com.vuclip.smpp.to.PDUTO;
 import com.vuclip.smpp.to.SMPPReqTO;
 import com.vuclip.util.LoggingBean;
@@ -72,6 +74,9 @@ public class SmppController {
 	public String customerId;
 
 	private CoreSMPPClient coreSMPPClient = null;
+	
+	@Autowired
+	private SMPPPropertyConfig config;
 
 	@Autowired
 	private SmppConfig smppConfig;
@@ -99,9 +104,15 @@ public class SmppController {
 	@RequestMapping(value = "/sendsms", method = RequestMethod.GET)
 	public ResponseEntity getResp(HttpServletRequest request, HttpServletResponse response) {
 		// Initialize SMPP Client
-		if (null == coreSMPPClient) {
-			coreSMPPClient = new CoreSMPPClient();
-		}
+				if (null == coreSMPPClient) {
+					try {
+						coreSMPPClient = new CoreSMPPClient(config);
+					} catch (IOException e) {
+						if (logger.isErrorEnabled()) {
+							logger.error("Error Sonfigurations Setting. " + e.getMessage());
+						}
+					}
+				}
 		if (null == transIdToUrlMap) {
 			transIdToUrlMap = new HashMap<String, String>();
 		}
@@ -165,8 +176,9 @@ public class SmppController {
 		smppReqTO.setPduto(pduto);
 		try {
 			coreSMPPClient.runSMSJob();
-			coreSMPPClient.submitSMSRequest(smppReqTO);
 			coreSMPPClient.runResponseHandlerJob();
+			
+			coreSMPPClient.submitSMSRequest(smppReqTO);
 		} catch (InterruptedException e) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("redirectionURL Error : " + e.getMessage());

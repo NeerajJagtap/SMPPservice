@@ -18,7 +18,7 @@
 	</properties>
 
 	<repositories>
-		<repository>
+		<!-- <repository>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -35,7 +35,7 @@
 		<repository>
 			<id>releases</id>
 			<url>http://64.71.156.181:8081/nexus/content/repositories/releases</url>
-		</repository>
+		</repository> -->
 		<repository>
 			<id>thirdparty</id>
 			<url>http://64.71.156.181:8081/nexus/content/repositories/thirdparty</url>
@@ -276,11 +276,12 @@
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- <dependency> <groupId>org.apache.geronimo.specs</groupId> <artifactId>geronimo-servlet_3.0_spec</artifactId> 
+			<version>1.0</version> <scope>provided</scope> </dependency> -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-servlet_3.0_spec</artifactId>
 			<version>1.0</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet.jsp</groupId>

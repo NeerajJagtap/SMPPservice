@@ -1,28 +1,31 @@
 package com.vuclip.smpp.to;
 
+import java.util.Map;
+
 public class ConfigTO {
+	private static final String SYNC = "sync";
+
 	private boolean isAsynchorized = false;
+
 	private String bindOption = "tr";
 	private String ipAddress = "127.0.0.1";
-	private int port = 9400;
+	private Integer port = 9400;
 	private String systemType = "NULL";
 	private String password = "testbr01";
 	private String systemId = "71";
 
-	private int pricePoint = 60225;
-	private int productId = 681;
-	private int rollId = 71;
-
-	private static final short PRICE_POINT_TAG = (short) 0x1400;
-	private static final short PRODUCT_ID_TAG = (short) 0x1401;
-	private static final short ROLL_ID_TAG = (short) 0x1402;
+	private Map<Integer, Integer> optionalParamMap;
 
 	public boolean isAsynchorized() {
 		return isAsynchorized;
 	}
 
-	public void setAsynchorized(boolean isAsynchorized) {
-		this.isAsynchorized = isAsynchorized;
+	public void setAsynchorized(String stringSync) {
+		if (SYNC.equals(stringSync)) {
+			this.isAsynchorized = false;
+		} else {
+			this.isAsynchorized = true;
+		}
 	}
 
 	public String getBindOption() {
@@ -71,6 +74,22 @@ public class ConfigTO {
 
 	public void setIpAddress(String ipAddress) {
 		this.ipAddress = ipAddress;
+	}
+
+	public void setAsynchorized(boolean isAsynchorized) {
+		this.isAsynchorized = isAsynchorized;
+	}
+
+	public void setPort(Integer port) {
+		this.port = port;
+	}
+
+	public Map<Integer, Integer> getOptionalParamMap() {
+		return optionalParamMap;
+	}
+
+	public void setOptionalParamMap(Map<Integer, Integer> optionalParamMap) {
+		this.optionalParamMap = optionalParamMap;
 	}
 
 }

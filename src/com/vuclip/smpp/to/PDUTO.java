@@ -5,12 +5,12 @@ import com.logica.smpp.pdu.Address;
 public class PDUTO {
 	private String systemType = "";
 	private String serviceType = "";
-	private Address sourceAddress = new Address();
-	private Address destAddress = new Address();
-	private String scheduleDeliveryTime = "NULL";
-	private String validityPeriod = "NULL";
-	private String shortMessage = "Hello";
-	private int numberOfDestination = 1;
+	private Address sourceAddress = null;
+	private Address destAddress = null;
+	private String scheduleDeliveryTime = null;
+	private String validityPeriod = null;
+	private String shortMessage = "";
+	private String messagePayload = null;
 	private String messageId = "";
 	private byte esmClass = 3;
 	private byte protocolId = 0;
@@ -76,14 +76,6 @@ public class PDUTO {
 		this.shortMessage = shortMessage;
 	}
 
-	public int getNumberOfDestination() {
-		return numberOfDestination;
-	}
-
-	public void setNumberOfDestination(int numberOfDestination) {
-		this.numberOfDestination = numberOfDestination;
-	}
-
 	public String getMessageId() {
 		return messageId;
 	}
@@ -146,6 +138,14 @@ public class PDUTO {
 
 	public void setSmDefaultMsgId(byte smDefaultMsgId) {
 		this.smDefaultMsgId = smDefaultMsgId;
+	}
+
+	public String getMessagePayload() {
+		return messagePayload;
+	}
+
+	public void setMessagePayload(String messagePayload) {
+		this.messagePayload = messagePayload;
 	}
 
 }
