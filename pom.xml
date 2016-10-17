@@ -277,6 +277,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-servlet_3.0_spec</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>javax.servlet.jsp</groupId>
 			<artifactId>jsp-api</artifactId>
 			<version>2.1</version>
@@ -381,7 +387,7 @@
 			<artifactId>org.apache.servicemix.bundles.jsmpp</artifactId>
 			<version>2.0_1</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>SMPPLibrary</groupId>
 			<artifactId>SMPPLibrary</artifactId>

@@ -18,18 +18,23 @@
 	<mvc:annotation-driven />
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-	<!-- <context:property-placeholder location="classpath:config.properties"/> -->
-	<bean
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:config.properties" />
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	<!-- <bean class="org.springframework.beans.factory.config.PropertySourcesPlaceholderConfigurer"> -->
+		<property name="locations">
+        <list>
+            <value>classpath:config.properties</value>
+            <value>classpath:smpp.properties</value>
+        </list>
+    </property>
+		<!-- <property name="location" value="classpath:config.properties" />
+		<property name="ignoreResourceNotFound" value="true" /> -->
 	</bean>
 
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource"
-		p:basename="Messages" />
-
+		p:basename="Messages" p:fallbackToSystemLocale="false"/>
 	
-
+	
 	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager"
 		p:sessionFactory-ref="sessionFactory" />
 		<!-- class="org.springframework.orm.hibernate3.HibernateTransactionManager" -->
@@ -55,10 +60,6 @@
 		</property>
 		<property name="packagesToScan" value="com.vuclip"></property>
 	</bean>
-
-<!-- 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"
-		p:driverClassName="${jdbc.driverClassName}" p:url="${jdbc.url}"
-		p:username="${jdbc.username}" p:password="${jdbc.password}" /> -->
 		
 	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
 		<constructor-arg ref="hikariConfig" />

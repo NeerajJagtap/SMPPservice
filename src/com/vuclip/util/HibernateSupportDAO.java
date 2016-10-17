@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class HibernateSupportDAO {
 
-	@Autowired
+	@Autowired(required=true)
 	public SessionFactory sessionFactory;
 
 	public void setSessionFactory(SessionFactory sessionFactory){

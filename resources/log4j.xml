@@ -3,7 +3,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
 	<appender name="debugFileAppender" class="org.apache.log4j.DailyRollingFileAppender">
-		<param name="File" value="${catalina.home}/logs/debuglogs/aocmock.log" />
+		<param name="File" value="${catalina.home}/logs/debuglogs/smpp.log" />
 		<param name="DatePattern" value=".yyyy-MM-dd-HH" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%c:%F:%L] - [%t] - %m%n " />
@@ -20,21 +20,53 @@
 		<level value="debug" />
 	</logger>
 	
+	
+	
 	<!-- 3rdparty Loggers -->
+	<logger name="org.springframework">
+		<level value="error" />
+	</logger>
+	
 	<logger name="org.springframework.core">
-		<level value="info" />
+		<level value="error" />
 	</logger>
 	
 	<logger name="org.springframework.beans">
-		<level value="info" />
+		<level value="error" />
 	</logger>
 	
 	<logger name="org.springframework.context">
-		<level value="info" />
+		<level value="error" />
 	</logger>
 
 	<logger name="org.springframework.web">
-		<level value="info" />
+		<level value="error" />
+	</logger>
+	
+	<logger name="org.jboss">
+		<level value="error" />
+	</logger>
+	<logger name="net.sf.ehcache">
+		<level value="error" />
+	</logger>
+	<logger name="net.bull.javamelody">
+		<level value="error" />
+	</logger>
+	
+	<!-- 3rdparty Loggers -->
+	<logger name="com.zaxxer.hikari">
+		<level value="error" />
+	</logger>
+	
+	<!-- 3rdparty Loggers -->
+	<logger name="org.hibernate">
+		<level value="error" />
+	</logger>
+
+	
+	<!-- 3rdparty Loggers -->
+	<logger name="org.apache.cxf">
+		<level value="error" />
 	</logger>
 
 	<!-- Root Logger -->
