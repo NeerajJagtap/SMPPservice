@@ -1,4 +1,4 @@
-package com.vuclip.props;
+package com.vuclip.smpp.props;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

@@ -24,6 +24,7 @@
         <list>
             <value>classpath:config.properties</value>
             <value>classpath:smpp.properties</value>
+            <value>classpath:smpp-config.properties</value>
         </list>
     </property>
 		<!-- <property name="location" value="classpath:config.properties" />

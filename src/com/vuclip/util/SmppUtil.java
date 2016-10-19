@@ -40,6 +40,18 @@ public class SmppUtil {
 
 		return map;
 	}
+	
+	public static String getTransactionIDForURL(String dlr_url) {
+		String transactionId = null;
+
+		String[] splitURL = dlr_url.split("&");
+		for (int index = 0; index < splitURL.length; index++) {
+			if (splitURL[index].contains("transid")) {
+				transactionId = splitURL[index].split("=")[1];
+			}
+		}
+		return transactionId;
+	}
 
 	public static String decodeToUtf8(String input) {
 		String decodedString = null;

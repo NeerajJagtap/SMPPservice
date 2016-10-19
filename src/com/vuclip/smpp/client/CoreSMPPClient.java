@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vuclip.smpp.props.SMPPPropertyConfig;
+import com.vuclip.smpp.props.SMPPProperties;
 import com.vuclip.smpp.service.impl.CoreSMPPServiceImpl;
 import com.vuclip.smpp.to.ConfigTO;
 import com.vuclip.smpp.to.SMPPReqTO;
@@ -42,13 +42,13 @@ public class CoreSMPPClient {
 
 	private ConfigTO configTO = new ConfigTO();
 
-	private SMPPPropertyConfig config;
+	private SMPPProperties config;
 
-	public CoreSMPPClient(SMPPPropertyConfig config) throws IOException {
+	public CoreSMPPClient(SMPPProperties config) throws IOException {
 		initialize(config);
 	}
 
-	private void initialize(SMPPPropertyConfig config) throws IOException {
+	private void initialize(SMPPProperties config) throws IOException {
 		// loadPeropertiesFile();
 		this.config = config;
 		loadConfigurations();

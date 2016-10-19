@@ -12,11 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -29,9 +25,11 @@ import com.logica.smpp.pdu.Address;
 import com.logica.smpp.pdu.WrongLengthOfStringException;
 import com.vuclip.config.SmppConfig;
 import com.vuclip.smpp.client.CoreSMPPClient;
-import com.vuclip.smpp.props.SMPPPropertyConfig;
+import com.vuclip.smpp.props.SMPPProperties;
+import com.vuclip.smpp.service.SmppService;
 import com.vuclip.smpp.to.PDUTO;
 import com.vuclip.smpp.to.SMPPReqTO;
+import com.vuclip.smpp.to.SmppData;
 import com.vuclip.util.LoggingBean;
 import com.vuclip.util.SmppUtil;
 
@@ -49,45 +47,16 @@ public class SmppController {
 	@Autowired
 	private LoggingBean loggingBean;
 
-	@Value("${ip}")
-	private String ip;
-
-	@Value("${port}")
-	private String port;
-
-	@Value("${title}")
-	private String title;
-
-	@Value("${sendsmsTxt}")
-	public String sendsmsTxt;
-
-	@Value("${billingTxt}")
-	public String billingTxt;
-
-	@Value("${zeroPricePoint}")
-	public String zeroPricePoint;
-
-	@Value("${providerId}")
-	public String providerId;
-
-	@Value("${customerId}")
-	public String customerId;
-
 	private CoreSMPPClient coreSMPPClient = null;
-	
+
 	@Autowired
-	private SMPPPropertyConfig config;
+	private SMPPProperties config;
 
 	@Autowired
 	private SmppConfig smppConfig;
 
-	/*
-	 * @Autowired HashDAO hashDAO;
-	 * 
-	 * @Autowired AocMockService aocMockService;
-	 * 
-	 * @Autowired private HashDataFormValidator validator;
-	 */
+	@Autowired
+	private SmppService smppService;
 
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
@@ -102,17 +71,19 @@ public class SmppController {
 	}
 
 	@RequestMapping(value = "/sendsms", method = RequestMethod.GET)
-	public ResponseEntity getResp(HttpServletRequest request, HttpServletResponse response) {
+	public ResponseEntity<?> getResp(HttpServletRequest request, HttpServletResponse response) {
+
 		// Initialize SMPP Client
-				if (null == coreSMPPClient) {
-					try {
-						coreSMPPClient = new CoreSMPPClient(config);
-					} catch (IOException e) {
-						if (logger.isErrorEnabled()) {
-							logger.error("Error Sonfigurations Setting. " + e.getMessage());
-						}
-					}
+		if (null == coreSMPPClient) {
+			try {
+				coreSMPPClient = new CoreSMPPClient(config);
+			} catch (IOException e) {
+				if (logger.isErrorEnabled()) {
+					logger.error("Error in Configuration Setting: " + e.getMessage());
 				}
+				e.printStackTrace();
+			}
+		}
 		if (null == transIdToUrlMap) {
 			transIdToUrlMap = new HashMap<String, String>();
 		}
@@ -150,13 +121,17 @@ public class SmppController {
 		System.out.println("Talend Input PARTNER_ROLE_ID : " + PARTNER_ROLE_ID);
 		System.out.println("Talend Input PRODUCT : " + PRODUCT);
 		System.out.println("Talend Input PRICEPOINT : " + PRICEPOINT);
-		
 
-		// Start
-		String transactionId = getTransactionIDForURL(dlr_url);
+		// fetching transaction id
+		String transactionId = SmppUtil.getTransactionIDForURL(dlr_url);
+
 		// Set inside DB
-
 		transIdToUrlMap.put(transactionId, dlr_url);
+		SmppData smppData = new SmppData();
+		smppData.setMsisdn(to);
+		smppData.setPricePoint(PRICEPOINT);
+		smppData.setTransactionId(transactionId);
+		smppService.save(smppData);
 
 		// Sending SMS to SMPP - Start
 		PDUTO pduto = new PDUTO();
@@ -165,8 +140,9 @@ public class SmppController {
 			pduto.setSourceAddress(new Address((byte) 0, (byte) 1, from));
 		} catch (WrongLengthOfStringException e) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("redirectionURL : " + e.getMessage());
+				logger.debug("Exception : " + e.getMessage());
 			}
+			e.printStackTrace();
 		}
 		pduto.setShortMessage(text);
 
@@ -177,34 +153,23 @@ public class SmppController {
 		try {
 			coreSMPPClient.runSMSJob();
 			coreSMPPClient.runResponseHandlerJob();
-			
+
 			coreSMPPClient.submitSMSRequest(smppReqTO);
 		} catch (InterruptedException e) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("redirectionURL Error : " + e.getMessage());
+				logger.debug("Execption : " + e.getMessage());
 			}
+			e.printStackTrace();
 		}
 
+		
 		if (logger.isDebugEnabled()) {
-			logger.debug(loggingBean.logData(request, "talendResponse", "rawRequest", "rawResponse", requestTime, responseTime, to, transactionId, PRICEPOINT));
+			logger.debug(loggingBean.logData(request, HttpStatus.OK+"", "rawRequest", "rawResponse", requestTime, responseTime, to, transactionId, PRICEPOINT));
 		}
-
-		return new ResponseEntity(HttpStatus.OK);
-	}
-	
-
-	private String getTransactionIDForURL(String dlr_url) {
-		String transactionId = null;
-
-		String[] splitURL = dlr_url.split("&");
-		for (int index = 0; index < splitURL.length; index++) {
-			if (splitURL[index].contains("transid")) {
-				transactionId = splitURL[index].split("=")[1];
-			}
-		}
-		return transactionId;
+		return new ResponseEntity<Integer>(HttpStatus.OK);
 	}
 
+	// Receive DN notification method
 	@RequestMapping(value = "/oovs-timwe/notification", method = RequestMethod.GET)
 	public String searchCustomer(HttpServletRequest request, HttpServletResponse response) {
 
@@ -212,6 +177,7 @@ public class SmppController {
 
 		return "200 OK";
 	}
+	
 
 	/*
 	 * // @RequestMapping("/searchCustomer") public ModelAndView searchCustomer(@RequestParam(required = false, defaultValue = "") String customerNo) { ModelAndView mav = new

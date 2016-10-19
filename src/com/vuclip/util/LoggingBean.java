@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.vuclip.props.WebProperties;
+import com.vuclip.smpp.props.WebProperties;
 
 @Component
 public class LoggingBean {
@@ -370,7 +370,7 @@ public class LoggingBean {
 			String transactionId, String pricePoint) {
 
 		String requestResponseTimeInterval = (requestTime.getTime() - responseTime.getTime()) + " milli seconds";
-		String requestToSmpp = talendRequest.getRequestURI() + "";
+		String requestToSmpp = talendRequest.getRequestURL()+"?"+ talendRequest.getQueryString()+"";
 		
 		if (pricePoint == null) {
 			activityType = "";
@@ -382,7 +382,7 @@ public class LoggingBean {
 
 		
 		return LoggingBean.getLogFormat(responseTime, msisdn, this.providerId, this.customerId, transactionId, activityType, requestTime,
-				responseTime, requestResponseTimeInterval, smppMethod, rawRequest, rawResponse, requestToSmpp, responseFromSmpp,
+				responseTime, requestResponseTimeInterval, smppMethod, rawRequest, rawResponse, requestToSmpp, talendResponse,
 				requestFromSmpp, responseToSmpp, "additionalParameters");
 
 	}
