@@ -2,14 +2,14 @@ package com.vuclip.smpp.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smpp.ServerPDUEvent;
+import org.smpp.ServerPDUEventListener;
+import org.smpp.Session;
+import org.smpp.SmppObject;
+import org.smpp.pdu.PDU;
+import org.smpp.pdu.ValueNotSetException;
+import org.smpp.util.Queue;
 
-import com.logica.smpp.ServerPDUEvent;
-import com.logica.smpp.ServerPDUEventListener;
-import com.logica.smpp.Session;
-import com.logica.smpp.SmppObject;
-import com.logica.smpp.pdu.PDU;
-import com.logica.smpp.pdu.ValueNotSetException;
-import com.logica.smpp.util.Queue;
 import com.vuclip.smpp.controllers.SmppController;
 
 public class SMPPPDUEventListener extends SmppObject implements ServerPDUEventListener {

@@ -18,24 +18,12 @@
 	</properties>
 
 	<repositories>
-		<!-- <repository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>central</id>
-			<name>libs-release</name>
-			<url>http://184.105.232.254:8081/artifactory/libs-release</url>
-		</repository>
-		<repository>
-			<snapshots />
-			<id>snapshots</id>
-			<name>libs-snapshot</name>
-			<url>http://184.105.232.254:8081/artifactory/libs-snapshot</url>
-		</repository>
-		<repository>
-			<id>releases</id>
-			<url>http://64.71.156.181:8081/nexus/content/repositories/releases</url>
-		</repository> -->
+		<!-- <repository> <snapshots> <enabled>false</enabled> </snapshots> <id>central</id> 
+			<name>libs-release</name> <url>http://184.105.232.254:8081/artifactory/libs-release</url> 
+			</repository> <repository> <snapshots /> <id>snapshots</id> <name>libs-snapshot</name> 
+			<url>http://184.105.232.254:8081/artifactory/libs-snapshot</url> </repository> 
+			<repository> <id>releases</id> <url>http://64.71.156.181:8081/nexus/content/repositories/releases</url> 
+			</repository> -->
 		<repository>
 			<id>thirdparty</id>
 			<url>http://64.71.156.181:8081/nexus/content/repositories/thirdparty</url>
@@ -389,12 +377,14 @@
 			<version>2.0_1</version>
 		</dependency>
 
+		<!-- <dependency> <groupId>SMPPLibrary</groupId> <artifactId>SMPPLibrary</artifactId> 
+			<scope>system</scope> <version>1.0</version> <systemPath>${basedir}\WebContent\WEB-INF\lib\SMPPLibrary.jar</systemPath> 
+			</dependency> -->
+
 		<dependency>
-			<groupId>SMPPLibrary</groupId>
-			<artifactId>SMPPLibrary</artifactId>
-			<scope>system</scope>
-			<version>1.0</version>
-			<systemPath>${basedir}\WebContent\WEB-INF\lib\SMPPLibrary.jar</systemPath>
+			<groupId>org.opensmpp</groupId>
+			<artifactId>opensmpp-core</artifactId>
+			<version>3.0.0</version>
 		</dependency>
 
 

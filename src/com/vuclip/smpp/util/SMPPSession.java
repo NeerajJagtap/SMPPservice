@@ -1,7 +1,7 @@
 package com.vuclip.smpp.util;
 
-import com.logica.smpp.Session;
-import com.logica.smpp.TCPIPConnection;
+import org.smpp.Session;
+import org.smpp.TCPIPConnection;
 
 public class SMPPSession extends Session {
 	private static SMPPSession session = null;

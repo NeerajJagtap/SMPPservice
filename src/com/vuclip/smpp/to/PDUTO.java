@@ -1,6 +1,9 @@
 package com.vuclip.smpp.to;
 
-import com.logica.smpp.pdu.Address;
+import java.util.List;
+
+import org.smpp.Data;
+import org.smpp.pdu.Address;
 
 public class PDUTO {
 	private String systemType = "";
@@ -12,13 +15,23 @@ public class PDUTO {
 	private String shortMessage = "";
 	private String messagePayload = null;
 	private String messageId = "";
-	private byte esmClass = 3;
+	private byte esmClass = (byte) Data.SM_STORE_FORWARD_MODE;
 	private byte protocolId = 0;
 	private byte priorityFlag = 0;
-	private byte registeredDelivery = 0;
+	private byte registeredDelivery = 1;
 	private byte replaceIfPresentFlag = 0;
 	private byte dataCoding = 0;
 	private byte smDefaultMsgId = 0;
+
+	private List<String> splitMessges;
+
+	public List<String> getSplitMessges() {
+		return splitMessges;
+	}
+
+	public void setSplitMessges(List<String> splitMessges) {
+		this.splitMessges = splitMessges;
+	}
 
 	public String getSystemType() {
 		return systemType;
