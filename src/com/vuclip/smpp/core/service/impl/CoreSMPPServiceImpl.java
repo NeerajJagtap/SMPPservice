@@ -36,7 +36,6 @@ import org.smpp.util.ByteBuffer;
 import com.vuclip.smpp.core.constants.MessageState;
 import com.vuclip.smpp.core.service.CoreSMPPService;
 import com.vuclip.smpp.core.to.DeliveryNotificationTO;
-import com.vuclip.smpp.core.to.PDUTO;
 import com.vuclip.smpp.core.to.SMPPReqTO;
 import com.vuclip.smpp.core.to.SMPPRespTO;
 import com.vuclip.smpp.core.util.SMPPPDUEventListener;
@@ -58,21 +57,15 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 	// Constants
 	private static final String COLLON = ":";
 
-	private static final String EMPTY_STRING = "";
-
 	private static final String SPACE = " ";
 
 	private static final String ID = "id";
 
-	private static final String DLVRD = "dlvrd";
-
 	private static final String STATE = "stat";
 
-	private static final String SUBMIT_DATE = "submitdate";
-
-	private static final String DONE_DATE = "donedate";
-
 	private static final String UNDELIVERED = "UNDELIV";
+
+	private static final String DATE = "date";
 
 	public CoreSMPPServiceImpl(SMPPProperties smppProperties) {
 		this.smppProperties = smppProperties;
@@ -185,21 +178,20 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 
 	private void setSubmitParameters(SubmitSM request)
 			throws WrongLengthOfStringException, UnsupportedEncodingException, WrongDateFormatException, TLVException {
-		PDUTO pduto = smppReqTO.getPduto();
 		// Set Request SpeceficParameters
-		request.setServiceType(pduto.getServiceType());
-		request.setSourceAddr(pduto.getSourceAddress());
-		request.setDestAddr(pduto.getDestAddress());
-		request.setReplaceIfPresentFlag(pduto.getReplaceIfPresentFlag());
-		request.setShortMessage(pduto.getShortMessage());
-		request.setScheduleDeliveryTime(pduto.getScheduleDeliveryTime());
-		request.setValidityPeriod(pduto.getValidityPeriod());
-		request.setEsmClass(pduto.getEsmClass());
-		request.setProtocolId(pduto.getProtocolId());
-		request.setPriorityFlag(pduto.getPriorityFlag());
-		request.setRegisteredDelivery(pduto.getRegisteredDelivery());
-		request.setDataCoding(pduto.getDataCoding());
-		request.setSmDefaultMsgId(pduto.getSmDefaultMsgId());
+		request.setServiceType(smppReqTO.getServiceType());
+		request.setSourceAddr(smppReqTO.getSourceAddress());
+		request.setDestAddr(smppReqTO.getDestAddress());
+		request.setReplaceIfPresentFlag(smppReqTO.getReplaceIfPresentFlag());
+		request.setShortMessage(smppReqTO.getShortMessage());
+		request.setScheduleDeliveryTime(smppReqTO.getScheduleDeliveryTime());
+		request.setValidityPeriod(smppReqTO.getValidityPeriod());
+		request.setEsmClass(smppReqTO.getEsmClass());
+		request.setProtocolId(smppReqTO.getProtocolId());
+		request.setPriorityFlag(smppReqTO.getPriorityFlag());
+		request.setRegisteredDelivery(smppReqTO.getRegisteredDelivery());
+		request.setDataCoding(smppReqTO.getDataCoding());
+		request.setSmDefaultMsgId(smppReqTO.getSmDefaultMsgId());
 		request.setSequenceNumber(1);
 		request.assignSequenceNumber(true);
 		// Set Config Specific Parameters
@@ -211,7 +203,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 					new ByteBuffer(java.nio.ByteBuffer.allocate(4).putInt(entry.getValue()).array()));
 		}
 		// Payload
-		request.setMessagePayload(new ByteBuffer(pduto.getMessagePayload().getBytes()));
+		request.setMessagePayload(new ByteBuffer(smppReqTO.getMessagePayload().getBytes()));
 	}
 
 	public boolean enquire() {
@@ -336,8 +328,9 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 							: MessageState.DELIVERED);
 				} else if (splitKeyValue[0].equals(ID)) {
 					dnto.setMessageId(splitKeyValue[1]);
-				} else if (splitKeyValue[0].equals("date")) {
+				} else if (splitKeyValue[0].equals(DATE)) {
 					if (dateCount == 0) {
+						dateCount++;
 						dnto.setSubmitDate(splitKeyValue[1]);
 					} else {
 						dnto.setDoneDate(splitKeyValue[1]);
@@ -345,7 +338,6 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 				}
 			}
 		}
-
 		System.out.println(shortMessage);
 	}
 

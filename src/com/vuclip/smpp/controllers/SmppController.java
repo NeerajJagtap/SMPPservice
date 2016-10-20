@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.vuclip.smpp.config.SmppConfig;
 import com.vuclip.smpp.core.handler.CoreSMPPHandler;
-import com.vuclip.smpp.core.to.PDUTO;
 import com.vuclip.smpp.core.to.SMPPReqTO;
 import com.vuclip.smpp.core.to.SMPPRespTO;
 import com.vuclip.smpp.orm.dto.SmppData;
@@ -134,23 +133,18 @@ public class SmppController {
 		smppService.save(smppData);
 
 		// Sending SMS to SMPP - Start
-		PDUTO pduto = new PDUTO();
+		SMPPReqTO smppReqTO = new SMPPReqTO();
 		try {
-			pduto.setDestAddress(new Address((byte) 1, (byte) 0, to));
-			pduto.setSourceAddress(new Address((byte) 0, (byte) 0, from));
+			smppReqTO.setDestAddress(new Address((byte) 1, (byte) 0, to));
+			smppReqTO.setSourceAddress(new Address((byte) 0, (byte) 0, from));
 		} catch (WrongLengthOfStringException e) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Exception : " + e.getMessage());
 			}
 			e.printStackTrace();
 		}
-		pduto.setMessagePayload(message_payload);
+		smppReqTO.setMessagePayload(message_payload);
 
-		SMPPReqTO smppReqTO = new SMPPReqTO();
-		smppReqTO.setDlrURL(dlr_url);
-		smppReqTO.setTransId(transactionId);
-		smppReqTO.setPduto(pduto);
-		// sendAsyncSMS(smppReqTO);
 		HttpStatus returnStatus = sendSyncSMS(smppReqTO, coreSMPPHandler);
 		Date responseTime = new Date();
 		if (logger.isDebugEnabled()) {
