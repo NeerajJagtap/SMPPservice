@@ -1,10 +1,10 @@
-package com.vuclip.smpp.dao;
+package com.vuclip.smpp.orm.dao;
 
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.vuclip.smpp.to.SmppData;
+import com.vuclip.smpp.orm.dto.SmppData;
 
 @Component
 public interface SmppDao {

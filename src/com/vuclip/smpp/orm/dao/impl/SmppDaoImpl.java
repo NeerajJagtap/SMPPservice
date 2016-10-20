@@ -1,4 +1,4 @@
-package com.vuclip.smpp.dao.impl;
+package com.vuclip.smpp.orm.dao.impl;
 
 import java.util.List;
 
@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.vuclip.smpp.dao.SmppDao;
-import com.vuclip.smpp.to.SmppData;
+import com.vuclip.smpp.orm.dao.SmppDao;
+import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.util.HibernateSupportDAO;
 
 @Component

@@ -7,9 +7,9 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vuclip.smpp.dao.SmppDao;
+import com.vuclip.smpp.orm.dao.SmppDao;
+import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.smpp.service.SmppService;
-import com.vuclip.smpp.to.SmppData;
 
 
 @Service

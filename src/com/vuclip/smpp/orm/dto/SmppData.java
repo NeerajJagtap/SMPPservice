@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.vuclip.smpp.to;
+package com.vuclip.smpp.orm.dto;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

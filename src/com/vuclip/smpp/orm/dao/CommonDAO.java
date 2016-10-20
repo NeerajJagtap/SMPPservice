@@ -1,4 +1,4 @@
-package com.vuclip.smpp.dao;
+package com.vuclip.smpp.orm.dao;
 
 import java.util.Collections;
 import java.util.List;

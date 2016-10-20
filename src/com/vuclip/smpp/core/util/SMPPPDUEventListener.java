@@ -1,4 +1,4 @@
-package com.vuclip.smpp.util;
+package com.vuclip.smpp.core.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

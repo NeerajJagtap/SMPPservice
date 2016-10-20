@@ -1,6 +1,4 @@
-package com.vuclip.smpp.to;
-
-import java.util.List;
+package com.vuclip.smpp.core.to;
 
 import org.smpp.Data;
 import org.smpp.pdu.Address;
@@ -23,14 +21,14 @@ public class PDUTO {
 	private byte dataCoding = 0;
 	private byte smDefaultMsgId = 0;
 
-	private List<String> splitMessges;
-
-	public List<String> getSplitMessges() {
-		return splitMessges;
-	}
-
-	public void setSplitMessges(List<String> splitMessges) {
-		this.splitMessges = splitMessges;
+	public String debugString() {
+		return "Request : [ System Type : " + systemType + " Service Type : " + serviceType + " Source Address : "
+				+ sourceAddress.debugString() + " Destination Address : " + destAddress.debugString()
+				+ " Schedule delivery time : " + scheduleDeliveryTime + " Validity period : " + validityPeriod
+				+ " Short Message : " + shortMessage + " Message payload : " + messagePayload + " Message Id : "
+				+ messageId + " ESM class : " + esmClass + " Protocol Id : " + protocolId + "Priority flag : "
+				+ priorityFlag + " Register delivery : " + registeredDelivery + " Replace if present flag : "
+				+ replaceIfPresentFlag + " Data Coding : " + dataCoding + " Default Msg Id : " + smDefaultMsgId + " ]";
 	}
 
 	public String getSystemType() {
@@ -160,5 +158,4 @@ public class PDUTO {
 	public void setMessagePayload(String messagePayload) {
 		this.messagePayload = messagePayload;
 	}
-
 }

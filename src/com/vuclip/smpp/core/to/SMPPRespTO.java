@@ -1,4 +1,4 @@
-package com.vuclip.smpp.to;
+package com.vuclip.smpp.core.to;
 
 public class SMPPRespTO {
 
@@ -11,6 +11,14 @@ public class SMPPRespTO {
 	private String resposeMessage;
 
 	private Integer responseId;
+
+	private String responseMsgId;
+
+	public String debugString() {
+		return "Response : [ Transaction Id : " + transId + " DLR url : " + dlrURL + " Response command status : "
+				+ respStatus + " Response body : " + resposeMessage + " Response command Id : " + responseId
+				+ " Response Message Id : " + responseMsgId + " ]";
+	}
 
 	public String getTransId() {
 		return transId;
@@ -50,6 +58,14 @@ public class SMPPRespTO {
 
 	public void setResponseId(Integer responseId) {
 		this.responseId = responseId;
+	}
+
+	public String getResponseMsgId() {
+		return responseMsgId;
+	}
+
+	public void setResponseMsgId(String responseMsgId) {
+		this.responseMsgId = responseMsgId;
 	}
 
 }

@@ -2,10 +2,8 @@ package com.vuclip.smpp.controllers;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,15 +27,14 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.vuclip.config.SmppConfig;
-import com.vuclip.smpp.client.CoreSMPPClient;
-import com.vuclip.smpp.client.CoreSMPPHandler;
+import com.vuclip.smpp.config.SmppConfig;
+import com.vuclip.smpp.core.handler.CoreSMPPHandler;
+import com.vuclip.smpp.core.to.PDUTO;
+import com.vuclip.smpp.core.to.SMPPReqTO;
+import com.vuclip.smpp.core.to.SMPPRespTO;
+import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.smpp.props.SMPPProperties;
 import com.vuclip.smpp.service.SmppService;
-import com.vuclip.smpp.to.PDUTO;
-import com.vuclip.smpp.to.SMPPReqTO;
-import com.vuclip.smpp.to.SMPPRespTO;
-import com.vuclip.smpp.to.SmppData;
 import com.vuclip.util.LoggingBean;
 import com.vuclip.util.SmppUtil;
 
@@ -55,12 +52,8 @@ public class SmppController {
 	@Autowired
 	private LoggingBean loggingBean;
 
-	private CoreSMPPClient coreSMPPClient = null;
-
 	@Autowired
-	private SMPPProperties config;
-
-	private CoreSMPPHandler coreSMPPHandler = null;
+	private SMPPProperties smppProperties;
 
 	@Autowired
 	private SmppConfig smppConfig;
@@ -82,27 +75,15 @@ public class SmppController {
 
 	@RequestMapping(value = "/sendsms", method = RequestMethod.GET)
 	public ResponseEntity<?> getResp(HttpServletRequest request, HttpServletResponse response) {
-
-		// Initialize SMPP Client
-		if (null == coreSMPPClient) {
-			try {
-				coreSMPPClient = new CoreSMPPClient(config);
-			} catch (IOException e) {
-				if (logger.isErrorEnabled()) {
-					logger.error("Error Sonfigurations Setting. " + e.getMessage());
-				}
+		CoreSMPPHandler coreSMPPHandler = null;
+		// Initialize SMPP Handler
+		try {
+			coreSMPPHandler = new CoreSMPPHandler(smppProperties);
+		} catch (IOException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Error Configurations Setting. " + e.getMessage());
 			}
-		}
-
-		if (null == coreSMPPHandler) {
-			try {
-				coreSMPPHandler = new CoreSMPPHandler(config);
-			} catch (IOException e) {
-				if (logger.isErrorEnabled()) {
-					logger.error("Error Sonfigurations Setting. " + e.getMessage());				
-				}
-				e.printStackTrace();
-			}
+			e.printStackTrace();
 		}
 		if (null == transIdToUrlMap) {
 			transIdToUrlMap = new HashMap<String, String>();
@@ -125,7 +106,6 @@ public class SmppController {
 		String PRICEPOINT = map.get("PRICEPOINT");
 
 		Date requestTime = new Date();
-		Date responseTime = new Date();
 
 		System.out.println("******************* Welcome SMPP Billing  ********************");
 		System.out.println(" Talend Input  : " + meta_data);
@@ -164,37 +144,28 @@ public class SmppController {
 			}
 			e.printStackTrace();
 		}
-		pduto.setShortMessage("");
-		List<String> list = getPartedMessages(message_payload, 115);
-		pduto.setSplitMessges(list);
-
 		pduto.setMessagePayload(message_payload);
 
 		SMPPReqTO smppReqTO = new SMPPReqTO();
 		smppReqTO.setDlrURL(dlr_url);
 		smppReqTO.setTransId(transactionId);
 		smppReqTO.setPduto(pduto);
-//		sendAsyncSMS(smppReqTO);
-
-		HttpStatus returnStatus = sendSyncSMS(smppReqTO);
-
-/*		if (logger.isDebugEnabled()) {
-			logger.debug(loggingBean.logData(request, "talendResponse", "rawRequest", "rawResponse", requestTime,
-					responseTime, to, transactionId, PRICEPOINT));
-		}
-*/		if (logger.isDebugEnabled()) {
-			logger.debug(loggingBean.logData(request, HttpStatus.OK+"", "rawRequest", "rawResponse", requestTime, responseTime, to, transactionId, PRICEPOINT));
+		// sendAsyncSMS(smppReqTO);
+		HttpStatus returnStatus = sendSyncSMS(smppReqTO, coreSMPPHandler);
+		Date responseTime = new Date();
+		if (logger.isDebugEnabled()) {
+			logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), "rawResponse",
+					requestTime, responseTime, to, transactionId, PRICEPOINT));
 		}
 		return new ResponseEntity(returnStatus);
-		
+
 	}
 
-	private HttpStatus sendSyncSMS(SMPPReqTO smppReqTO) {
-		coreSMPPHandler.runReceiverListener();
+	private HttpStatus sendSyncSMS(SMPPReqTO smppReqTO, CoreSMPPHandler coreSMPPHandler) {
 		SMPPRespTO responseTO = null;
 		try {
-			coreSMPPHandler.runReceiverListener();
 			responseTO = coreSMPPHandler.submitSMSRequest(smppReqTO);
+			coreSMPPHandler.runReceiverListener();
 		} catch (WrongLengthOfStringException e) {
 			if (logger.isErrorEnabled()) {
 				logger.error("Submit operation failed. " + e);
@@ -227,36 +198,6 @@ public class SmppController {
 		return HttpStatus.BAD_REQUEST;
 	}
 
-	private void sendAsyncSMS(SMPPReqTO smppReqTO) {
-		try {
-			coreSMPPClient.runSMSJob();
-			coreSMPPClient.runResponseHandlerJob();
-			coreSMPPClient.runReceiverListener();
-
-			coreSMPPClient.submitSMSRequest(smppReqTO);
-		} catch (InterruptedException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Execption : " + e.getMessage());
-			}
-			e.printStackTrace();
-		}
-	}
-
-	private List<String> getPartedMessages(String original, int lenghtOfPart) {
-		List<String> list = new ArrayList<String>();
-		StringBuilder stringBuilder = new StringBuilder(original);
-		while (stringBuilder.length() > 0) {
-			if (stringBuilder.length() > lenghtOfPart) {
-				list.add(stringBuilder.substring(0, lenghtOfPart));
-				stringBuilder.replace(0, lenghtOfPart, "");
-			} else {
-				list.add(stringBuilder.toString());
-				stringBuilder.replace(0, stringBuilder.length(), "");
-			}
-		}
-		return list;
-	}
-
 	private String getTransactionIDForURL(String dlr_url) {
 		String transactionId = null;
 
@@ -277,68 +218,5 @@ public class SmppController {
 
 		return "200 OK";
 	}
-	
 
-	/*
-	 * // @RequestMapping("/searchCustomer") public ModelAndView
-	 * searchCustomer(@RequestParam(required = false, defaultValue = "") String
-	 * customerNo) { ModelAndView mav = new ModelAndView("showCustomer");
-	 * List<HashData> hashData = hashDAO.searchCustomer(customerNo.trim());
-	 * mav.addObject("SEARCH_HASHDATA_RESULTS_KEY", hashData); return mav; }
-	 */
-
-	/*
-	 * 
-	 * // @RequestMapping("/viewAllCustomer") public ModelAndView
-	 * getAllCustomer() { ModelAndView mav = new ModelAndView("showCustomer");
-	 * List<HashData> hashData = hashDAO.getAllHashData();
-	 * mav.addObject("SEARCH_HASHDATA_RESULTS_KEY", hashData); return mav; }
-	 * 
-	 * // @RequestMapping(value="/saveCustomer", method=RequestMethod.GET)
-	 * public ModelAndView newuserForm() { ModelAndView mav = new
-	 * ModelAndView("newCustomer"); HashData hashData = new HashData();
-	 * mav.getModelMap().put("newCustomer", hashData); return mav; }
-	 * 
-	 * // @RequestMapping(value="/saveCustomer", method=RequestMethod.POST)
-	 * public String create(@ModelAttribute("newCustomer") HashData hashData,
-	 * BindingResult result, SessionStatus status) {
-	 * validator.validate(hashData, result); if (result.hasErrors()) { return
-	 * "newCustomer"; } hashDAO.save(hashData); status.setComplete(); return
-	 * "redirect:viewAllCustomer.htm"; }
-	 * 
-	 * // @RequestMapping(value="/updateCustomer", method=RequestMethod.GET)
-	 * public ModelAndView edit(@RequestParam("id") Integer id) { ModelAndView
-	 * mav = new ModelAndView("editCustomer"); HashData hashData =
-	 * hashDAO.getById(id); mav.addObject("editCustomer", hashData); return mav;
-	 * }
-	 * 
-	 * 
-	 * 
-	 * @RequestMapping(value = "/getCustomer", method = RequestMethod.GET)
-	 * public ModelAndView getCustomer(String customerNo) { ModelAndView mav =
-	 * new ModelAndView("editCustomer"); // HashData hashData =
-	 * hashDAO.getByCustomerNo(customerNo);
-	 * 
-	 * // AOC flow starts here String endocedAOCString =
-	 * "4u%2Bz3oOVstniZS7VucmMc9ky0r2iBglcQkxAHudhj5p9jSXjH09mXTnPMLGKDINWYMzLD5r5F95b3VZ5CpKg1RoXI8cEzqDSiXuoqajviQU%3D"
-	 * ; // String endocedAOCString = //
-	 * "MoO6yxJ2ru4mbjvWVm5IOXxNBbFsMhb2uTCUcTe0N5XYvcxXVi5SUaVzCdZCnG7GDQ81JfZBonN%2B0z2lML6HEIUY6pIVOJxBoPrSfrcfCzQ%3D"
-	 * ; String finalRespString = aocMockService.aocFlowMock(endocedAOCString);
-	 * System.out.println("Encoded Output from AOC : " + finalRespString);
-	 * logger.debug("Encoded Output from AOC : " + finalRespString);
-	 * 
-	 * mav.addObject("editCustomer", finalRespString); return mav; }
-	 * 
-	 * // @RequestMapping(value="/updateCustomer", method=RequestMethod.POST)
-	 * public String update(@ModelAttribute("editCustomer") HashData hashData,
-	 * BindingResult result, SessionStatus status) {
-	 * validator.validate(hashData, result); if (result.hasErrors()) { return
-	 * "editCustomer"; } hashDAO.update(hashData); status.setComplete(); return
-	 * "redirect:viewAllCustomer.htm"; }
-	 * 
-	 * // @RequestMapping("deleteCustomer") public ModelAndView
-	 * delete(@RequestParam("id") Integer id) { ModelAndView mav = new
-	 * ModelAndView("redirect:viewAllCustomer.htm"); hashDAO.delete(id); return
-	 * mav; }
-	 */
 }

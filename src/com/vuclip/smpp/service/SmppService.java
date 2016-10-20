@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.vuclip.smpp.to.SmppData;
+import com.vuclip.smpp.orm.dto.SmppData;
 
 @Service
 public interface SmppService {

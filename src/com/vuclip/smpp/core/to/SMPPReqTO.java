@@ -1,11 +1,9 @@
-package com.vuclip.smpp.to;
+package com.vuclip.smpp.core.to;
 
 public class SMPPReqTO {
 	private String transId = null;
 
 	private String dlrURL = null;
-
-	private String respStatus = null;
 
 	private PDUTO pduto = null;
 
@@ -33,12 +31,8 @@ public class SMPPReqTO {
 		this.pduto = pduto;
 	}
 
-	public String getRespStatus() {
-		return respStatus;
-	}
-
-	public void setRespStatus(String respStatus) {
-		this.respStatus = respStatus;
+	public String debugString() {
+		return "Transaction ID : " + transId + " DLR url : " + dlrURL + "\n Request PDU : " + pduto.debugString();
 	}
 
 }
