@@ -96,9 +96,9 @@ public class SmppController {
 		String dlr_mask = request.getParameter("dlr-mask");
 		String text = request.getParameter("text");
 		String meta_data = request.getParameter("meta-data");
-		String dlr_url = request.getParameter("dlr-url");
+		String dlr_url = SmppUtil.decodeToUtf8(request.getParameter("dlr-url"));
 
-		HashMap<String, String> map = SmppUtil.getData(meta_data);
+		HashMap<String, String> map = SmppUtil.getData(SmppUtil.decodeToUtf8(meta_data));
 
 		String message_payload = map.get("message_payload");
 		String PARTNER_ROLE_ID = map.get("PARTNER_ROLE_ID");
