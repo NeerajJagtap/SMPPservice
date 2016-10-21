@@ -124,13 +124,13 @@ public class SmppController {
 		// fetching transaction id
 		String transactionId = SmppUtil.getTransactionIDForURL(dlr_url);
 
-		// Set inside DB
+		// Set data for DB
 		transIdToUrlMap.put(transactionId, dlr_url);
 		SmppData smppData = new SmppData();
 		smppData.setMsisdn(to);
 		smppData.setPricePoint(PRICEPOINT);
 		smppData.setTransactionId(transactionId);
-		smppService.save(smppData);
+		smppData.setReqStatus("0");
 
 		// Sending SMS to SMPP - Start
 		SMPPReqTO smppReqTO = new SMPPReqTO();
@@ -145,17 +145,40 @@ public class SmppController {
 		}
 		smppReqTO.setMessagePayload(message_payload);
 
-		HttpStatus returnStatus = sendSyncSMS(smppReqTO, coreSMPPHandler);
+		SMPPRespTO smppRespTO = sendSyncSMS(smppReqTO, coreSMPPHandler);
+
+		HttpStatus returnStatus = HttpStatus.GATEWAY_TIMEOUT;
+
+		if (null != smppRespTO && smppRespTO.getRespStatus() == 0) {
+			returnStatus = HttpStatus.ACCEPTED;
+			smppData.setMessageId(smppRespTO.getResponseMsgId());
+			smppData.setReqStatus("1");
+			smppData.setRespStatus(returnStatus+"");
+			smppService.save(smppData);
+		}else{
+			smppData.setReqStatus("1");
+			smppData.setRespStatus(returnStatus+"");
+			smppService.save(smppData);
+		}
+			
+
 		Date responseTime = new Date();
 		if (logger.isDebugEnabled()) {
-			logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), "rawResponse",
-					requestTime, responseTime, to, transactionId, PRICEPOINT));
-		}
-		return new ResponseEntity(returnStatus);
 
+			// talendRequest, talendResponse, rawRequest, rawResponse, requestTime, responseTime, msisdn, transactionId, pricePoint
+			if (smppRespTO != null){
+				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO.debugString(), requestTime, responseTime, to, transactionId,
+						PRICEPOINT));
+			}else{
+				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO+"", requestTime, responseTime, to, transactionId,
+						PRICEPOINT));
+			}
+		}
+
+		return new ResponseEntity(returnStatus);
 	}
 
-	private HttpStatus sendSyncSMS(SMPPReqTO smppReqTO, CoreSMPPHandler coreSMPPHandler) {
+	private SMPPRespTO sendSyncSMS(SMPPReqTO smppReqTO, CoreSMPPHandler coreSMPPHandler) {
 		SMPPRespTO responseTO = null;
 		try {
 			responseTO = coreSMPPHandler.submitSMSRequest(smppReqTO);
@@ -186,22 +209,7 @@ public class SmppController {
 			}
 		}
 
-		if (null != responseTO && responseTO.getRespStatus() == 0) {
-			return HttpStatus.ACCEPTED;
-		}
-		return HttpStatus.BAD_REQUEST;
-	}
-
-	private String getTransactionIDForURL(String dlr_url) {
-		String transactionId = null;
-
-		String[] splitURL = dlr_url.split("&");
-		for (int index = 0; index < splitURL.length; index++) {
-			if (splitURL[index].contains("transid")) {
-				transactionId = splitURL[index].split("=")[1];
-			}
-		}
-		return transactionId;
+		return responseTO;
 	}
 
 	// Receive DN notification method

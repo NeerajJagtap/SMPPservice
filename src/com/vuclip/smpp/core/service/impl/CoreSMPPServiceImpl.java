@@ -166,7 +166,6 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			smppRespTO = new SMPPRespTO();
 			smppRespTO.setRespStatus(response.getCommandStatus());
 			smppRespTO.setResponseId(response.getCommandId());
-			smppRespTO.setResposeMessage(response.getBody().toString());
 			smppRespTO.setResponseMsgId(response.getMessageId());
 		}
 		System.out.println("Submit SM End");

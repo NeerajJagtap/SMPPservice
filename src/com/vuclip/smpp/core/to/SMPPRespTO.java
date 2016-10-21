@@ -15,9 +15,9 @@ public class SMPPRespTO {
 	private String responseMsgId;
 
 	public String debugString() {
-		return "Response : [ Transaction Id : " + transId + " DLR url : " + dlrURL + " Response command status : "
-				+ respStatus + " Response body : " + resposeMessage + " Response command Id : " + responseId
-				+ " Response Message Id : " + responseMsgId + " ]";
+		return "Response:[Transaction_Id:" + transId + "|DLR_Url:" + dlrURL + "|Response_Command_Status:"
+				+ respStatus + "|Response_Body:" + resposeMessage + "|Response_Command_Id:" + responseId
+				+ "|Response_Message_Id:" + responseMsgId + "]";
 	}
 
 	public String getTransId() {

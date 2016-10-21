@@ -369,7 +369,7 @@ public class LoggingBean {
 	public String logData(HttpServletRequest talendRequest, String talendResponse, String rawRequest, String rawResponse, Date requestTime, Date responseTime, String msisdn,
 			String transactionId, String pricePoint) {
 
-		String requestResponseTimeInterval = (requestTime.getTime() - responseTime.getTime()) + " milli seconds";
+		String requestResponseTimeInterval = (responseTime.getTime() - requestTime.getTime()) + " milli seconds";
 		String requestToSmpp = talendRequest.getRequestURL()+"?"+ talendRequest.getQueryString()+"";
 		
 		if (pricePoint == null) {

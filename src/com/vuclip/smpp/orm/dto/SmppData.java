@@ -32,6 +32,12 @@ public class SmppData {
 	@Column(name="transaction_id")
 	private String transactionId;
 	
+	@Column(name="req_status")
+	private String reqStatus; 
+	
+	@Column(name="resp_status")
+	private String respStatus; 
+	
 	@Column(name="message_id")
 	private String messageId; 
 	
@@ -48,21 +54,25 @@ public class SmppData {
 	{
 	}
 	
-	public SmppData(int id,String msisdn, String transactionId, String messageId, String pricePoint, String createdDate,String modifiedDate) {
+	public SmppData(int id,String msisdn, String transactionId,String reqStatus, String respStatus, String messageId, String pricePoint, String createdDate,String modifiedDate) {
 		super();
 		this.id = id;
 		this.msisdn = msisdn;
 		this.transactionId = transactionId;
+		this.reqStatus = reqStatus;
+		this.respStatus = respStatus;
 		this.messageId = messageId;
 		this.pricePoint = pricePoint;
 		this.createdDate = createdDate;
 		this.modifiedDate = modifiedDate;
 	}
 	
-	public SmppData(String msisdn, String transactionId, String messageId, String pricePoint, String createdDate,String modifiedDate) {
+	public SmppData(String msisdn, String transactionId,String reqStatus, String respStatus, String messageId, String pricePoint, String createdDate,String modifiedDate) {
 		super();
 		this.msisdn = msisdn;
 		this.transactionId = transactionId;
+		this.reqStatus = reqStatus;
+		this.respStatus = respStatus;
 		this.messageId = messageId;
 		this.pricePoint = pricePoint;
 		this.createdDate = createdDate;
@@ -90,6 +100,22 @@ public class SmppData {
 
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
+	}
+	
+	public String getReqStatus() {
+		return reqStatus;
+	}
+
+	public void setReqStatus(String reqStatus) {
+		this.reqStatus = reqStatus;
+	}
+
+	public String getRespStatus() {
+		return respStatus;
+	}
+
+	public void setRespStatus(String respStatus) {
+		this.respStatus = respStatus;
 	}
 
 	public String getMessageId() {

@@ -22,13 +22,13 @@ public class SMPPReqTO {
 	private byte smDefaultMsgId = 0;
 
 	public String debugString() {
-		return "Request : [ System Type : " + systemType + " Service Type : " + serviceType + " Source Address : "
-				+ sourceAddress.debugString() + " Destination Address : " + destAddress.debugString()
-				+ " Schedule delivery time : " + scheduleDeliveryTime + " Validity period : " + validityPeriod
-				+ " Short Message : " + shortMessage + " Message payload : " + messagePayload + " Message Id : "
-				+ messageId + " ESM class : " + esmClass + " Protocol Id : " + protocolId + "Priority flag : "
-				+ priorityFlag + " Register delivery : " + registeredDelivery + " Replace if present flag : "
-				+ replaceIfPresentFlag + " Data Coding : " + dataCoding + " Default Msg Id : " + smDefaultMsgId + " ]";
+		return "Request[System_Type:" + systemType + "|Service_Type:" + serviceType + "|Source_Address:"
+				+ sourceAddress.debugString() + "|Destination_Address:" + destAddress.debugString()
+				+ "|Schedule_Delivery_Time:" + scheduleDeliveryTime + "|Validity_Period:" + validityPeriod
+				+ "|Short_Message:" + shortMessage + "|Message_Payload:" + messagePayload + "|Message_Id:"
+				+ messageId + "|ESM_Class:" + esmClass + "|Protocol_Id:" + protocolId + "|Priority_Flag:"
+				+ priorityFlag + "|Register_Delivery:" + registeredDelivery + "|Replace_If_Present_Flag:"
+				+ replaceIfPresentFlag + "|Data_Coding:" + dataCoding + "|Default_Msg_Id:" + smDefaultMsgId + "]";
 	}
 
 	public String getSystemType() {
