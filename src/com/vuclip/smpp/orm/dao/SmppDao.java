@@ -12,6 +12,8 @@ public interface SmppDao {
 	public SmppData getById(int id);
 
 	public SmppData getByMsisdn(String msisdn) ;
+	
+	public SmppData getRecord(SmppData smppData);
 
 	public List<SmppData> getAllSmppData() ;
 

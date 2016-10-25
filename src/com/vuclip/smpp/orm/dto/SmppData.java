@@ -18,43 +18,56 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  *
  */
 @Entity
-@Table(name="smpp_data")
-@Cache(usage=CacheConcurrencyStrategy.READ_ONLY, region="smpp_data")
+@Table(name = "smpp_data")
+@Cache(usage = CacheConcurrencyStrategy.READ_ONLY, region = "smpp_data")
 public class SmppData {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
-	
-	@Column(name="msisdn")
+
+	@Column(name = "msisdn")
 	private String msisdn;
-	
-	@Column(name="transaction_id")
+
+	@Column(name = "transaction_id")
 	private String transactionId;
-	
-	@Column(name="req_status")
-	private String reqStatus; 
-	
-	@Column(name="resp_status")
-	private String respStatus; 
-	
-	@Column(name="message_id")
-	private String messageId; 
-	
-	@Column(name="price_point")
-	private String pricePoint; 
-	
-	@Column(name="created_date",updatable=false,insertable=false)
+
+	@Column(name = "req_status")
+	private String reqStatus;
+
+	@Column(name = "resp_status")
+	private String respStatus;
+
+	@Column(name = "message_id")
+	private String messageId;
+
+	@Column(name = "price_point")
+	private String pricePoint;
+
+	@Column(name = "created_date", updatable = false, insertable = false)
 	private String createdDate;
-	
-	@Column(name="modified_date",updatable=false,insertable=false)
+
+	@Column(name = "modified_date", updatable = false, insertable = false)
 	private String modifiedDate;
-		
-	public SmppData()
-	{
+
+	@Column(name = "dn_message")
+	private String dnMessage;
+
+	@Column(name = "dlr_url")
+	private String dlrURL;
+
+	@Column(name = "retries")
+	private int reties;
+
+	@Column(name = "talend_response")
+	private String talendResponse;
+
+	public SmppData() {
 	}
-	
-	public SmppData(int id,String msisdn, String transactionId,String reqStatus, String respStatus, String messageId, String pricePoint, String createdDate,String modifiedDate) {
+
+	public SmppData(int id, String msisdn, String transactionId, String reqStatus, String respStatus, String messageId,
+			String pricePoint, String createdDate, String modifiedDate, String dnMessage, String dlrURL, int retries,
+			String talendResponse) {
 		super();
 		this.id = id;
 		this.msisdn = msisdn;
@@ -65,9 +78,15 @@ public class SmppData {
 		this.pricePoint = pricePoint;
 		this.createdDate = createdDate;
 		this.modifiedDate = modifiedDate;
+		this.dnMessage = dnMessage;
+		this.dlrURL = dlrURL;
+		this.reties = retries;
+		this.talendResponse = talendResponse;
 	}
-	
-	public SmppData(String msisdn, String transactionId,String reqStatus, String respStatus, String messageId, String pricePoint, String createdDate,String modifiedDate) {
+
+	public SmppData(String msisdn, String transactionId, String reqStatus, String respStatus, String messageId,
+			String pricePoint, String createdDate, String modifiedDate, String dnMessage, String dlrURL, int retries,
+			String talendResponse) {
 		super();
 		this.msisdn = msisdn;
 		this.transactionId = transactionId;
@@ -77,15 +96,20 @@ public class SmppData {
 		this.pricePoint = pricePoint;
 		this.createdDate = createdDate;
 		this.modifiedDate = modifiedDate;
+		this.dnMessage = dnMessage;
+		this.dlrURL = dlrURL;
+		this.reties = retries;
+		this.talendResponse = talendResponse;
 	}
-	
+
 	public int getId() {
 		return id;
 	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
-		
+
 	public String getMsisdn() {
 		return msisdn;
 	}
@@ -101,7 +125,7 @@ public class SmppData {
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
 	}
-	
+
 	public String getReqStatus() {
 		return reqStatus;
 	}
@@ -142,7 +166,8 @@ public class SmppData {
 	}
 
 	/**
-	 * @param createdDate the createdDate to set
+	 * @param createdDate
+	 *            the createdDate to set
 	 */
 	public void setCreatedDate(String createdDate) {
 		this.createdDate = createdDate;
@@ -156,16 +181,51 @@ public class SmppData {
 	}
 
 	/**
-	 * @param modifiedDate the modifiedDate to set
+	 * @param modifiedDate
+	 *            the modifiedDate to set
 	 */
 	public void setModifiedDate(String modifiedDate) {
 		this.modifiedDate = modifiedDate;
 	}
 
+	public String getDnMessage() {
+		return dnMessage;
+	}
+
+	public void setDnMessage(String dnMessage) {
+		this.dnMessage = dnMessage;
+	}
+
+	public String getDlrURL() {
+		return dlrURL;
+	}
+
+	public void setDlrURL(String dlrURL) {
+		this.dlrURL = dlrURL;
+	}
+
+	public int getReties() {
+		return reties;
+	}
+
+	public void setReties(int reties) {
+		this.reties = reties;
+	}
+
+	public String getTalendResponse() {
+		return talendResponse;
+	}
+
+	public void setTalendResponse(String talendResponse) {
+		this.talendResponse = talendResponse;
+	}
+
 	@Override
 	public String toString() {
-		return "SmppData [id=" + id + ", msisdn=" + msisdn + ", transactionId=" + transactionId + ", messageId=" + messageId + ", pricePoint=" + pricePoint + ", createdDate="
-				+ createdDate + ", modifiedDate=" + modifiedDate + "]";
+		return "SmppData [id=" + id + ", msisdn=" + msisdn + ", transactionId=" + transactionId + ", messageId="
+				+ messageId + ", pricePoint=" + pricePoint + ", createdDate=" + createdDate + ", modifiedDate="
+				+ modifiedDate + ", DN Message=" + dnMessage + ", dlrURL=" + dlrURL + ", Talend Response="
+				+ talendResponse + "]";
 	}
-		
+
 }

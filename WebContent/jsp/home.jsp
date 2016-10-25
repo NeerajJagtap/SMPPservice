@@ -20,12 +20,9 @@
 
 		<p>
 			<!-- <a href="viewAllCustomer.htm">Get Customer</a> -->
-			<a href="viewAllCustomer.htm">Get AOC Hash Response</a>
+			<!-- <a href="viewAllCustomer.htm">Get AOC Hash Response</a> -->
 		</p>
 		<br> <br>
-		<p>
-			<a href="viewAllContacts.htm">Show Customer</a>
-		</p>
 	</center>
 </body>
 </html>

@@ -13,34 +13,36 @@
 			http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
 	<context:annotation-config />
-	<context:component-scan base-package="com.vuclip" />
+	<context:component-scan base-package="com.vuclip.*" />
 
 	<mvc:annotation-driven />
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	<!-- <bean class="org.springframework.beans.factory.config.PropertySourcesPlaceholderConfigurer"> -->
+	<!-- <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"> -->
 		<property name="locations">
-        <list>
-            <value>classpath:config.properties</value>
-            <value>classpath:smpp.properties</value>
-            <value>classpath:smpp-config.properties</value>
-        </list>
-    </property>
-		<!-- <property name="location" value="classpath:config.properties" />
-		<property name="ignoreResourceNotFound" value="true" /> -->
+			<list>
+				<value>classpath:config.properties</value>
+				<value>classpath:smpp.properties</value>
+				<value>classpath:smpp-config.properties</value>
+				<value>classpath:exceptions.properties</value>
+			</list>
+		</property>
+		<!-- <property name="location" value="classpath:config.properties" /> <property 
+			name="ignoreResourceNotFound" value="true" /> -->
 	</bean>
-
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource"
-		p:basename="Messages" p:fallbackToSystemLocale="false"/>
-	
-	
-	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager"
-		p:sessionFactory-ref="sessionFactory" />
-		<!-- class="org.springframework.orm.hibernate3.HibernateTransactionManager" -->
+		p:basename="Messages" p:fallbackToSystemLocale="false" />
 
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager"
+		p:sessionFactory-ref="sessionFactory" />
+	<!-- class="org.springframework.orm.hibernate3.HibernateTransactionManager" -->
+
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 		<!-- class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"> -->
 		<property name="dataSource" ref="dataSource" />
 		<property name="hibernateProperties">

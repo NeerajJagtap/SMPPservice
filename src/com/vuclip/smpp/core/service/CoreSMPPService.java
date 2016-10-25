@@ -1,32 +1,24 @@
 package com.vuclip.smpp.core.service;
 
-import java.io.IOException;
-
-import org.smpp.TimeoutException;
-import org.smpp.WrongSessionStateException;
-import org.smpp.pdu.PDUException;
-import org.smpp.pdu.ValueNotSetException;
-
 import com.vuclip.smpp.core.to.DeliveryNotificationTO;
 import com.vuclip.smpp.core.to.SMPPReqTO;
 import com.vuclip.smpp.core.to.SMPPRespTO;
+import com.vuclip.smpp.exceptions.SMPPException;
 
 public interface CoreSMPPService {
-	
+
 	public void setSmppReqTO(SMPPReqTO smppReqTO);
 
-	public boolean bind();
+	public boolean bind() throws SMPPException;
 
-	public SMPPRespTO submitSync()
-			throws ValueNotSetException, TimeoutException, PDUException, WrongSessionStateException, IOException;
+	public SMPPRespTO submitSync() throws SMPPException;
 
-	public boolean enquire();
+	public boolean enquire() throws SMPPException;
 
-	public boolean unbind();
+	public boolean unbind() throws SMPPException;
 
-	public SMPPRespTO submitMessagePDU()
-			throws ValueNotSetException, TimeoutException, PDUException, WrongSessionStateException, IOException;
+	public SMPPRespTO submitMessagePDU() throws SMPPException;
 
-	public DeliveryNotificationTO receiveListener();
+	public DeliveryNotificationTO receiveListener() throws SMPPException;
 
 }
