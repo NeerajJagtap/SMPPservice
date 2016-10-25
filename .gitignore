@@ -13,3 +13,5 @@
 .settings/org.eclipse.wst.validation.prefs
 .settings/org.hibernate.eclipse.console.prefs
 .settings/org.eclipse.jdt.ui.prefs
+src/com/test/CycleTest.java
+src/com/test/ShortMsgTest.java
