@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vuclip.smpp.exceptions.constant.SMPPExceptionConstant;
 
-public class SMPPExceptionJava extends Exception {
+public class SMPPException extends Exception {
 
-	private static final Logger logger = LoggerFactory.getLogger(SMPPExceptionJava.class);
+	private static final Logger logger = LoggerFactory.getLogger(SMPPException.class);
 
 	private static final String COLON = " : ";
 
@@ -21,7 +21,7 @@ public class SMPPExceptionJava extends Exception {
 
 	private String exceptionId;
 
-	public SMPPExceptionJava(String exceptionId, String message) {
+	public SMPPException(String exceptionId, String message) {
 		super(message);
 		this.exceptionId = exceptionId;
 	}
@@ -30,7 +30,7 @@ public class SMPPExceptionJava extends Exception {
 		if (!SMPPExceptionConstant.PROPERTIES_LOADING_EXCEPTION.equals(this.exceptionId)) {
 			try {
 				properties = ExceptionPropertiesLoader.getPropertyInstance();
-			} catch (SMPPExceptionJava e) {
+			} catch (SMPPException e) {
 				if (logger.isErrorEnabled()) {
 					logger.error(e.getMessage());
 				}
