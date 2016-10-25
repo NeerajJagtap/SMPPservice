@@ -97,18 +97,18 @@ public class CoreSMPPHandler {
 
 			private void sendNotificationToTalend(DeliveryNotificationTO dnto) throws IOException {
 				talendRequestTime = new Date();
+				// Split URL to encode separately
+				String splitURL[] = dlrURL.split("smscid");
+
 				// Call REST service of talend
-				String urlString = dlrURL.replace("%p", dnto.getMsisdn()).replace("%a",
-						SmppUtil.encodeToUtf8(dnto.getResponseDNString()));
+				String urlString = splitURL[0].replace("%p", dnto.getMsisdn()).replace("%a",
+						SmppUtil.encodeToUtf8(dnto.getResponseDNString()))
+						+ SmppUtil.encodeToUtf8("smscid" + splitURL[1]);
 				URL url = new URL(urlString);
 				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 				conn.setRequestMethod("GET");
 				conn.setRequestProperty("Accept", "application/json");
-				int responseCode = 404, requestCounter = 0;
-				do {
-					responseCode = conn.getResponseCode();
-					requestCounter++;
-				} while (responseCode != 200 && requestCounter < 5);
+				int responseCode = conn.getResponseCode();
 				talendResponseTime = new Date();
 				if (responseCode == 200) {
 					if (logger.isDebugEnabled()) {
@@ -122,14 +122,14 @@ public class CoreSMPPHandler {
 					}
 				}
 				// Update data in database
-				updateDataToDB(dnto, responseCode);
+				updateDataToDB(dnto, responseCode, urlString);
 			}
 
-			private void updateDataToDB(DeliveryNotificationTO dnto, int responseCode) {
-				SmppData smppData = new SmppData();
-				smppData.setMsisdn(dnto.getMsisdn());
-				smppData.setTransactionId(transactionID);
-				smppData.setRespStatus(dnto.getDeliveryStatus().toString());
+			private void updateDataToDB(DeliveryNotificationTO dnto, int responseCode, String urlString) {
+				SmppData smppData = smppService.getByMsisdn(dnto.getMsisdn());
+				smppData.setDlrURL(urlString);
+				smppData.setDnMessage(dnto.getResponseDNString());
+				smppData.setTalendResponse(Integer.valueOf(responseCode).toString());
 				smppService.update(smppData);
 			}
 		}).start();
