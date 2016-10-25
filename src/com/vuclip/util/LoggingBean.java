@@ -352,6 +352,9 @@ public class LoggingBean {
 			Date talendResponseTime) {
 		StringBuilder stringBuilderListener = new StringBuilder(
 				"\n+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+\n");
+		if (!talendResponse.equals("200")) {
+			stringBuilderListener.append("***Response from talend is not OK after trying for 5 times*** \n");
+		}
 		stringBuilderListener.append("MSISDN : [").append(deliveryNotificationTO.getMsisdn())
 				.append("] Message ID : [");
 		stringBuilderListener.append(deliveryNotificationTO.getMessageId()).append("]\n");

@@ -14,7 +14,7 @@ import com.vuclip.smpp.core.service.impl.CoreSMPPServiceImpl;
 import com.vuclip.smpp.core.to.DeliveryNotificationTO;
 import com.vuclip.smpp.core.to.SMPPReqTO;
 import com.vuclip.smpp.core.to.SMPPRespTO;
-import com.vuclip.smpp.exceptions.SMPPExceptionJava;
+import com.vuclip.smpp.exceptions.SMPPException;
 import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.smpp.props.SMPPProperties;
 import com.vuclip.smpp.service.SmppService;
@@ -43,7 +43,7 @@ public class CoreSMPPHandler {
 		this.dlrURL = dlrURL;
 	}
 
-	public SMPPRespTO submitSMSRequest(SMPPReqTO smppReqTO) throws SMPPExceptionJava {
+	public SMPPRespTO submitSMSRequest(SMPPReqTO smppReqTO) throws SMPPException {
 		coreSMPPService.setSmppReqTO(smppReqTO);
 		submitMessagePDU = coreSMPPService.submitMessagePDU();
 		runReceiverListener();
@@ -68,7 +68,7 @@ public class CoreSMPPHandler {
 				listenerStartTime = new Date();
 				try {
 					dnto = coreSMPPService.receiveListener();
-				} catch (SMPPExceptionJava e) {
+				} catch (SMPPException e) {
 					if (logger.isDebugEnabled()) {
 						logger.debug(" DN Listener Exception in : " + e.getMessage());
 					}
@@ -104,22 +104,28 @@ public class CoreSMPPHandler {
 				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 				conn.setRequestMethod("GET");
 				conn.setRequestProperty("Accept", "application/json");
-				int responseCode = 404;
+				int responseCode = 404, requestCounter = 0;
 				do {
 					responseCode = conn.getResponseCode();
-				} while (responseCode != 200);
+					requestCounter++;
+				} while (responseCode != 200 && requestCounter < 5);
+				talendResponseTime = new Date();
 				if (responseCode == 200) {
-					talendResponseTime = new Date();
 					if (logger.isDebugEnabled()) {
-						logger.debug(LoggingBean.logData(dnto, urlString, "200 OK", listenerStartTime,
-								responseReceivedTime, talendRequestTime, talendResponseTime));
+						logger.debug(LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(),
+								listenerStartTime, responseReceivedTime, talendRequestTime, talendResponseTime));
 					}
-					// Update data in database
-					updateDataToDB(dnto);
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug(LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(),
+								listenerStartTime, responseReceivedTime, talendRequestTime, talendResponseTime));
+					}
 				}
+				// Update data in database
+				updateDataToDB(dnto, responseCode);
 			}
 
-			private void updateDataToDB(DeliveryNotificationTO dnto) {
+			private void updateDataToDB(DeliveryNotificationTO dnto, int responseCode) {
 				SmppData smppData = new SmppData();
 				smppData.setMsisdn(dnto.getMsisdn());
 				smppData.setTransactionId(transactionID);

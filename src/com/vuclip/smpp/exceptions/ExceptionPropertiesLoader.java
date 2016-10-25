@@ -10,16 +10,16 @@ public class ExceptionPropertiesLoader {
 
 	private static Properties properties;
 
-	public static Properties getPropertyInstance() throws SMPPExceptionJava {
+	public static Properties getPropertyInstance() throws SMPPException {
 		if (null == properties) {
 			properties = new Properties();
 			try {
 				properties.load(
 						ExceptionPropertiesLoader.class.getClassLoader().getResourceAsStream("exceptions.properties"));
 			} catch (FileNotFoundException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.PROPERTIES_LOADING_EXCEPTION, e.getMessage());
+				throw new SMPPException(SMPPExceptionConstant.PROPERTIES_LOADING_EXCEPTION, e.getMessage());
 			} catch (IOException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.PROPERTIES_LOADING_EXCEPTION, e.getMessage());
+				throw new SMPPException(SMPPExceptionConstant.PROPERTIES_LOADING_EXCEPTION, e.getMessage());
 			}
 		}
 		return properties;

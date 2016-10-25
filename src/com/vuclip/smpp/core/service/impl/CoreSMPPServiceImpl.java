@@ -40,7 +40,7 @@ import com.vuclip.smpp.core.to.SMPPReqTO;
 import com.vuclip.smpp.core.to.SMPPRespTO;
 import com.vuclip.smpp.core.util.SMPPPDUEventListener;
 import com.vuclip.smpp.core.util.SMPPSession;
-import com.vuclip.smpp.exceptions.SMPPExceptionJava;
+import com.vuclip.smpp.exceptions.SMPPException;
 import com.vuclip.smpp.exceptions.constant.SMPPExceptionConstant;
 import com.vuclip.smpp.props.SMPPProperties;
 
@@ -71,7 +71,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		this.msisdn = smppReqTO.getDestAddress().getAddress();
 	}
 
-	public boolean bind() throws SMPPExceptionJava {
+	public boolean bind() throws SMPPException {
 		try {
 			System.out.println("Bind Start");
 			if (logger.isDebugEnabled()) {
@@ -97,13 +97,13 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 				logger.debug("[" + msisdn + "] Bind response " + response.debugString());
 			}
 		} catch (PDUException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.BIND_PDU_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.BIND_PDU_EXCEPTION, e.getMessage());
 		} catch (TimeoutException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.BIND_TIMEOUT_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.BIND_TIMEOUT_EXCEPTION, e.getMessage());
 		} catch (WrongSessionStateException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.BIND_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.BIND_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
 		} catch (IOException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.BIND_IO_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.BIND_IO_EXCEPTION, e.getMessage());
 		}
 		System.out.println("Bind End");
 		if (logger.isDebugEnabled()) {
@@ -135,7 +135,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		return request;
 	}
 
-	public SMPPRespTO submitSync() throws SMPPExceptionJava {
+	public SMPPRespTO submitSync() throws SMPPException {
 		System.out.println("Submit SM Start.");
 		SMPPRespTO smppRespTO = null;
 		if (logger.isDebugEnabled()) {
@@ -166,13 +166,13 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 				smppRespTO.setResponseMsgId(response.getMessageId());
 			}
 		} catch (PDUException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.SUBMIT_SM_PDU_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.SUBMIT_SM_PDU_EXCEPTION, e.getMessage());
 		} catch (TimeoutException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.SUBMIT_SM_TIMEOUT_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.SUBMIT_SM_TIMEOUT_EXCEPTION, e.getMessage());
 		} catch (WrongSessionStateException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.SUBMIT_SM_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.SUBMIT_SM_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
 		} catch (IOException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.SUBMIT_SM_IO_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.SUBMIT_SM_IO_EXCEPTION, e.getMessage());
 		}
 		System.out.println("Submit SM End");
 		if (logger.isDebugEnabled()) {
@@ -181,7 +181,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		return smppRespTO;
 	}
 
-	private void setSubmitParameters(SubmitSM request) throws SMPPExceptionJava {
+	private void setSubmitParameters(SubmitSM request) throws SMPPException {
 		try {
 			// Set Request SpeceficParameters
 			request.setServiceType(smppReqTO.getServiceType());
@@ -210,15 +210,15 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			// Payload
 			request.setMessagePayload(new ByteBuffer(smppReqTO.getMessagePayload().getBytes()));
 		} catch (TLVException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.TLV_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.TLV_EXCEPTION, e.getMessage());
 		} catch (WrongDateFormatException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.WRONG_DATE_FORMAT_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.WRONG_DATE_FORMAT_EXCEPTION, e.getMessage());
 		} catch (WrongLengthOfStringException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.WRONG_LENGTH_OF_STRING_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.WRONG_LENGTH_OF_STRING_EXCEPTION, e.getMessage());
 		}
 	}
 
-	public boolean enquire() throws SMPPExceptionJava {
+	public boolean enquire() throws SMPPException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("[" + msisdn + "] Enquire Link Start.");
 		}
@@ -238,17 +238,17 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			}
 			return true;
 		} catch (PDUException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.ENQUIRE_PDU_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.ENQUIRE_PDU_EXCEPTION, e.getMessage());
 		} catch (TimeoutException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.ENQUIRE_TIMEOUT_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.ENQUIRE_TIMEOUT_EXCEPTION, e.getMessage());
 		} catch (WrongSessionStateException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.ENQUIRE_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.ENQUIRE_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
 		} catch (IOException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.ENQUIRE_IO_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.ENQUIRE_IO_EXCEPTION, e.getMessage());
 		}
 	}
 
-	public boolean unbind() throws SMPPExceptionJava {
+	public boolean unbind() throws SMPPException {
 		if (!session.isBound()) {
 			return true;
 		}
@@ -268,20 +268,20 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 						+ response.debugString());
 			}
 		} catch (IOException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.UNBIND_IO_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.UNBIND_IO_EXCEPTION, e.getMessage());
 		} catch (ValueNotSetException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.UNBIND_VALUE_NOT_SET_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.UNBIND_VALUE_NOT_SET_EXCEPTION, e.getMessage());
 		} catch (TimeoutException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.UNBIND_TIMEOUT_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.UNBIND_TIMEOUT_EXCEPTION, e.getMessage());
 		} catch (PDUException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.UNBIND_PDU_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.UNBIND_PDU_EXCEPTION, e.getMessage());
 		} catch (WrongSessionStateException e) {
-			throw new SMPPExceptionJava(SMPPExceptionConstant.UNBIND_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
+			throw new SMPPException(SMPPExceptionConstant.UNBIND_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
 		}
 		return session.isBound();
 	}
 
-	public DeliveryNotificationTO receiveListener() throws SMPPExceptionJava {
+	public DeliveryNotificationTO receiveListener() throws SMPPException {
 		if (null != session && session.isBound()) {
 			try {
 				// if (!session.isBound()) {
@@ -331,23 +331,23 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 				unbind();
 				session.close();
 			} catch (IOException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.LISTENER_IO_EXCEPTION, e.getMessage());
-			} catch (SMPPExceptionJava e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.LISTENER_SMPP_NESTED_EXCEPTION, e.getMessage());
+				throw new SMPPException(SMPPExceptionConstant.LISTENER_IO_EXCEPTION, e.getMessage());
+			} catch (SMPPException e) {
+				throw new SMPPException(SMPPExceptionConstant.LISTENER_SMPP_NESTED_EXCEPTION, e.getMessage());
 			} catch (WrongSessionStateException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.LISTENER_WRONG_SESSION_STATE_EXCEPTION,
+				throw new SMPPException(SMPPExceptionConstant.LISTENER_WRONG_SESSION_STATE_EXCEPTION,
 						e.getMessage());
 			} catch (ValueNotSetException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.LISTENER_VALUE_NOT_SET_EXCEPTION, e.getMessage());
+				throw new SMPPException(SMPPExceptionConstant.LISTENER_VALUE_NOT_SET_EXCEPTION, e.getMessage());
 			} catch (UnknownCommandIdException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.LISTENER_UNKNOWN_COMMAND_ID_EXCEPTION,
+				throw new SMPPException(SMPPExceptionConstant.LISTENER_UNKNOWN_COMMAND_ID_EXCEPTION,
 						e.getMessage());
 			} catch (TimeoutException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.LISTENER_TIMEOUT_EXCEPTION, e.getMessage());
+				throw new SMPPException(SMPPExceptionConstant.LISTENER_TIMEOUT_EXCEPTION, e.getMessage());
 			} catch (NotSynchronousException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.LISTENER_NOT_SYNC_EXCEPTION, e.getMessage());
+				throw new SMPPException(SMPPExceptionConstant.LISTENER_NOT_SYNC_EXCEPTION, e.getMessage());
 			} catch (PDUException e) {
-				throw new SMPPExceptionJava(SMPPExceptionConstant.LISTENER_PDU_EXCEPTION, e.getMessage());
+				throw new SMPPException(SMPPExceptionConstant.LISTENER_PDU_EXCEPTION, e.getMessage());
 			}
 		}
 		return null;
@@ -357,7 +357,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		return shortMessage.split(" ")[0].split(":")[1];
 	}
 
-	public SMPPRespTO submitMessagePDU() throws SMPPExceptionJava {
+	public SMPPRespTO submitMessagePDU() throws SMPPException {
 		boolean bindSuccess = false;
 		if (session == null || (session != null && !session.isBound())) {
 			bindSuccess = bind();

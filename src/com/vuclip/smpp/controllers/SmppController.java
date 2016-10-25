@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +26,7 @@ import com.vuclip.smpp.config.SmppConfig;
 import com.vuclip.smpp.core.handler.CoreSMPPHandler;
 import com.vuclip.smpp.core.to.SMPPReqTO;
 import com.vuclip.smpp.core.to.SMPPRespTO;
-import com.vuclip.smpp.exceptions.SMPPExceptionJava;
+import com.vuclip.smpp.exceptions.SMPPException;
 import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.smpp.props.SMPPProperties;
 import com.vuclip.smpp.service.SmppService;
@@ -41,7 +40,6 @@ import com.vuclip.util.SmppUtil;
 
 @Controller
 public class SmppController {
-	public static Map<String, String> transIdToUrlMap = null;
 
 	private static final Logger logger = LoggerFactory.getLogger(SmppController.class);
 
@@ -71,42 +69,19 @@ public class SmppController {
 
 	@RequestMapping(value = "/sendsms", method = RequestMethod.GET)
 	public ResponseEntity<?> getResp(HttpServletRequest request, HttpServletResponse response) {
-		String username = request.getParameter("username");
-		String password = request.getParameter("password");
 		String to = request.getParameter("to");
 		String from = request.getParameter("from");
-		String dlr_mask = request.getParameter("dlr-mask");
-		String text = request.getParameter("text");
 		String meta_data = request.getParameter("meta-data");
-		String dlr_url = request.getParameter("dlr-url");
+		String dlr_url = SmppUtil.decodeToUtf8(request.getParameter("dlr-url"));
 
 		HashMap<String, String> map = SmppUtil.getData(SmppUtil.decodeToUtf8(meta_data));
-
 		String message_payload = map.get("message_payload");
-		String PARTNER_ROLE_ID = map.get("PARTNER_ROLE_ID");
-		String PRODUCT = map.get("PRODUCT");
 		String PRICEPOINT = map.get("PRICEPOINT");
 
 		Date requestTime = new Date();
 
-		System.out.println("******************* Welcome SMPP Billing  ********************");
-		System.out.println(" Talend Input  : " + meta_data);
-		System.out.println("Talend Input username : " + username);
-		System.out.println("Talend Input password : " + password);
-		System.out.println("Talend Input (msisdn) to : " + to);
-		System.out.println("Talend Input (shortCode) from : " + from);
-		System.out.println("Talend Input dlr_mask : " + dlr_mask);
-		System.out.println("Talend Input text : " + text);
-		System.out.println("Talend Input meta_data : " + meta_data);
-		System.out.println("Talend Input dlr_url : " + dlr_url);
-		System.out.println("Talend Input message_payload : " + message_payload);
-		System.out.println("Talend Input PARTNER_ROLE_ID : " + PARTNER_ROLE_ID);
-		System.out.println("Talend Input PRODUCT : " + PRODUCT);
-		System.out.println("Talend Input PRICEPOINT : " + PRICEPOINT);
-
 		// fetching transaction id
 		String transactionId = SmppUtil.getTransactionIDForURL(dlr_url);
-
 		CoreSMPPHandler coreSMPPHandler = null;
 		// Initialize SMPP Handler
 		try {
@@ -116,17 +91,6 @@ public class SmppController {
 				logger.error("Error Configurations Setting. " + e.getMessage());
 			}
 		}
-		if (null == transIdToUrlMap) {
-			transIdToUrlMap = new HashMap<String, String>();
-		}
-
-		// Set data for DB
-		transIdToUrlMap.put(transactionId, dlr_url);
-		SmppData smppData = new SmppData();
-		smppData.setMsisdn(to);
-		smppData.setPricePoint(PRICEPOINT);
-		smppData.setTransactionId(transactionId);
-		smppData.setReqStatus("0");
 
 		// Sending SMS to SMPP - Start
 		SMPPReqTO smppReqTO = new SMPPReqTO();
@@ -140,28 +104,15 @@ public class SmppController {
 			e.printStackTrace();
 		}
 		smppReqTO.setMessagePayload(message_payload);
-
+		// Send SMS
 		SMPPRespTO smppRespTO = sendSyncSMS(smppReqTO, coreSMPPHandler);
 
 		HttpStatus returnStatus = HttpStatus.GATEWAY_TIMEOUT;
-
-		if (null != smppRespTO && smppRespTO.getRespStatus() == 0) {
-			returnStatus = HttpStatus.ACCEPTED;
-			smppData.setMessageId(smppRespTO.getResponseMsgId());
-			smppData.setReqStatus("1");
-			smppData.setRespStatus(returnStatus + "");
-			smppService.save(smppData);
-		} else {
-			smppData.setReqStatus("1");
-			smppData.setRespStatus(returnStatus + "");
-			smppService.save(smppData);
-		}
+		// Insert Data in local DB
+		returnStatus = insertDataInDB(to, PRICEPOINT, transactionId, smppRespTO, returnStatus);
 
 		Date responseTime = new Date();
 		if (logger.isDebugEnabled()) {
-
-			// talendRequest, talendResponse, rawRequest, rawResponse,
-			// requestTime, responseTime, msisdn, transactionId, pricePoint
 			if (smppRespTO != null) {
 				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(),
 						smppRespTO.debugString(), requestTime, responseTime, to, transactionId, PRICEPOINT));
@@ -174,26 +125,38 @@ public class SmppController {
 		return new ResponseEntity(returnStatus);
 	}
 
+	private HttpStatus insertDataInDB(String to, String PRICEPOINT, String transactionId, SMPPRespTO smppRespTO,
+			HttpStatus returnStatus) {
+		// Set data for DB
+		SmppData smppData = new SmppData();
+		smppData.setMsisdn(to);
+		smppData.setPricePoint(PRICEPOINT);
+		smppData.setTransactionId(transactionId);
+		smppData.setReqStatus("0");
+		if (null != smppRespTO && smppRespTO.getRespStatus() == 0) {
+			returnStatus = HttpStatus.ACCEPTED;
+			smppData.setMessageId(smppRespTO.getResponseMsgId());
+			smppData.setReqStatus("1");
+			smppData.setRespStatus(returnStatus + "");
+			smppService.save(smppData);
+		} else {
+			smppData.setReqStatus("1");
+			smppData.setRespStatus(returnStatus + "");
+			smppService.save(smppData);
+		}
+		return returnStatus;
+	}
+
 	private SMPPRespTO sendSyncSMS(SMPPReqTO smppReqTO, CoreSMPPHandler coreSMPPHandler) {
 		SMPPRespTO responseTO = null;
 		try {
 			responseTO = coreSMPPHandler.submitSMSRequest(smppReqTO);
-		} catch (SMPPExceptionJava e) {
+		} catch (SMPPException e) {
 			if (logger.isErrorEnabled()) {
 				logger.error("Submit operation failed. " + e.getMessage());
 			}
 		}
-
 		return responseTO;
-	}
-
-	// Receive DN notification method
-	@RequestMapping(value = "/oovs-timwe/notification", method = RequestMethod.GET)
-	public String searchCustomer(HttpServletRequest request, HttpServletResponse response) {
-
-		System.out.println(" Input data : " + request.getParameter("transid"));
-
-		return "200 OK";
 	}
 
 }
