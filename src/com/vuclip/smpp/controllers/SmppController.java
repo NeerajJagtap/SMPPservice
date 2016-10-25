@@ -11,11 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smpp.TimeoutException;
-import org.smpp.WrongSessionStateException;
 import org.smpp.pdu.Address;
-import org.smpp.pdu.PDUException;
-import org.smpp.pdu.ValueNotSetException;
 import org.smpp.pdu.WrongLengthOfStringException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -31,6 +27,7 @@ import com.vuclip.smpp.config.SmppConfig;
 import com.vuclip.smpp.core.handler.CoreSMPPHandler;
 import com.vuclip.smpp.core.to.SMPPReqTO;
 import com.vuclip.smpp.core.to.SMPPRespTO;
+import com.vuclip.smpp.exceptions.SMPPExceptionJava;
 import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.smpp.props.SMPPProperties;
 import com.vuclip.smpp.service.SmppService;
@@ -74,20 +71,6 @@ public class SmppController {
 
 	@RequestMapping(value = "/sendsms", method = RequestMethod.GET)
 	public ResponseEntity<?> getResp(HttpServletRequest request, HttpServletResponse response) {
-		CoreSMPPHandler coreSMPPHandler = null;
-		// Initialize SMPP Handler
-		try {
-			coreSMPPHandler = new CoreSMPPHandler(smppProperties);
-		} catch (IOException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Error Configurations Setting. " + e.getMessage());
-			}
-			e.printStackTrace();
-		}
-		if (null == transIdToUrlMap) {
-			transIdToUrlMap = new HashMap<String, String>();
-		}
-
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
 		String to = request.getParameter("to");
@@ -95,7 +78,7 @@ public class SmppController {
 		String dlr_mask = request.getParameter("dlr-mask");
 		String text = request.getParameter("text");
 		String meta_data = request.getParameter("meta-data");
-		String dlr_url = SmppUtil.decodeToUtf8(request.getParameter("dlr-url"));
+		String dlr_url = request.getParameter("dlr-url");
 
 		HashMap<String, String> map = SmppUtil.getData(SmppUtil.decodeToUtf8(meta_data));
 
@@ -123,6 +106,19 @@ public class SmppController {
 
 		// fetching transaction id
 		String transactionId = SmppUtil.getTransactionIDForURL(dlr_url);
+
+		CoreSMPPHandler coreSMPPHandler = null;
+		// Initialize SMPP Handler
+		try {
+			coreSMPPHandler = new CoreSMPPHandler(smppProperties, dlr_url, transactionId, smppService);
+		} catch (IOException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Error Configurations Setting. " + e.getMessage());
+			}
+		}
+		if (null == transIdToUrlMap) {
+			transIdToUrlMap = new HashMap<String, String>();
+		}
 
 		// Set data for DB
 		transIdToUrlMap.put(transactionId, dlr_url);
@@ -153,25 +149,25 @@ public class SmppController {
 			returnStatus = HttpStatus.ACCEPTED;
 			smppData.setMessageId(smppRespTO.getResponseMsgId());
 			smppData.setReqStatus("1");
-			smppData.setRespStatus(returnStatus+"");
+			smppData.setRespStatus(returnStatus + "");
 			smppService.save(smppData);
-		}else{
+		} else {
 			smppData.setReqStatus("1");
-			smppData.setRespStatus(returnStatus+"");
+			smppData.setRespStatus(returnStatus + "");
 			smppService.save(smppData);
 		}
-			
 
 		Date responseTime = new Date();
 		if (logger.isDebugEnabled()) {
 
-			// talendRequest, talendResponse, rawRequest, rawResponse, requestTime, responseTime, msisdn, transactionId, pricePoint
-			if (smppRespTO != null){
-				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO.debugString(), requestTime, responseTime, to, transactionId,
-						PRICEPOINT));
-			}else{
-				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO+"", requestTime, responseTime, to, transactionId,
-						PRICEPOINT));
+			// talendRequest, talendResponse, rawRequest, rawResponse,
+			// requestTime, responseTime, msisdn, transactionId, pricePoint
+			if (smppRespTO != null) {
+				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(),
+						smppRespTO.debugString(), requestTime, responseTime, to, transactionId, PRICEPOINT));
+			} else {
+				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO + "",
+						requestTime, responseTime, to, transactionId, PRICEPOINT));
 			}
 		}
 
@@ -182,30 +178,9 @@ public class SmppController {
 		SMPPRespTO responseTO = null;
 		try {
 			responseTO = coreSMPPHandler.submitSMSRequest(smppReqTO);
-			coreSMPPHandler.runReceiverListener();
-		} catch (WrongLengthOfStringException e) {
+		} catch (SMPPExceptionJava e) {
 			if (logger.isErrorEnabled()) {
-				logger.error("Submit operation failed. " + e);
-			}
-		} catch (ValueNotSetException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Submit operation failed. " + e);
-			}
-		} catch (TimeoutException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Submit operation failed. " + e);
-			}
-		} catch (PDUException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Submit operation failed. " + e);
-			}
-		} catch (WrongSessionStateException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Submit operation failed. " + e);
-			}
-		} catch (IOException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Submit operation failed. " + e);
+				logger.error("Submit operation failed. " + e.getMessage());
 			}
 		}
 

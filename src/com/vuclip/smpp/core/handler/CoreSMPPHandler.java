@@ -1,42 +1,130 @@
 package com.vuclip.smpp.core.handler;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Date;
 
-import org.smpp.TimeoutException;
-import org.smpp.WrongSessionStateException;
-import org.smpp.pdu.PDUException;
-import org.smpp.pdu.ValueNotSetException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.smpp.Data;
 
 import com.vuclip.smpp.core.service.CoreSMPPService;
 import com.vuclip.smpp.core.service.impl.CoreSMPPServiceImpl;
 import com.vuclip.smpp.core.to.DeliveryNotificationTO;
 import com.vuclip.smpp.core.to.SMPPReqTO;
 import com.vuclip.smpp.core.to.SMPPRespTO;
+import com.vuclip.smpp.exceptions.SMPPExceptionJava;
+import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.smpp.props.SMPPProperties;
+import com.vuclip.smpp.service.SmppService;
+import com.vuclip.util.LoggingBean;
+import com.vuclip.util.SmppUtil;
 
 public class CoreSMPPHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(CoreSMPPHandler.class);
+
 	private CoreSMPPService coreSMPPService = null;
 
-	public CoreSMPPHandler(SMPPProperties smppProperties) throws IOException {
+	private SMPPRespTO submitMessagePDU = null;
+
+	private String transactionID = null;
+
+	private String dlrURL = null;
+
+	private SmppService smppService;
+
+	public CoreSMPPHandler(SMPPProperties smppProperties, String dlrURL, String transactionID, SmppService smppService)
+			throws IOException {
 		coreSMPPService = new CoreSMPPServiceImpl(smppProperties);
+		this.smppService = smppService;
+		this.transactionID = transactionID;
+		this.dlrURL = dlrURL;
 	}
 
-	public SMPPRespTO submitSMSRequest(SMPPReqTO smppReqTO)
-			throws ValueNotSetException, TimeoutException, PDUException, WrongSessionStateException, IOException {
+	public SMPPRespTO submitSMSRequest(SMPPReqTO smppReqTO) throws SMPPExceptionJava {
 		coreSMPPService.setSmppReqTO(smppReqTO);
-		return coreSMPPService.submitMessagePDU();
+		submitMessagePDU = coreSMPPService.submitMessagePDU();
+		runReceiverListener();
+		return submitMessagePDU;
 	}
 
 	public void runReceiverListener() {
 		new Thread(new Runnable() {
 
+			private Date listenerStartTime;
+
+			private Date responseReceivedTime;
+
+			private Date talendRequestTime;
+
+			private Date talendResponseTime;
+
 			@Override
 			public void run() {
-				DeliveryNotificationTO dnto = coreSMPPService.receiveListener();
-				if (null != dnto) {
-					System.out.println("Response : " + dnto.debugString());
+				DeliveryNotificationTO dnto = null;
+				// Start Time
+				listenerStartTime = new Date();
+				try {
+					dnto = coreSMPPService.receiveListener();
+				} catch (SMPPExceptionJava e) {
+					if (logger.isDebugEnabled()) {
+						logger.debug(" DN Listener Exception in : " + e.getMessage());
+					}
 				}
+				responseReceivedTime = new Date();
+				if (null != dnto && Data.ESME_ROK == dnto.getDeliveryStatus()) {
+					System.out.println("Response : " + dnto.debugString());
+					if (null != submitMessagePDU && null != transactionID && null != dlrURL
+							&& submitMessagePDU.getRespStatus() == Data.ESME_ROK) {
+						try {
+							sendNotificationToTalend(dnto);
+						} catch (IOException e) {
+							if (logger.isDebugEnabled()) {
+								logger.debug("[" + dnto.getMsisdn()
+										+ "] DN Listener Error: Error while connecting to Talend.");
+							}
+						}
+					}
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("[" + dnto.getMsisdn() + "] DN Listener NULL: "
+								+ (null == dnto ? "Delivery Notification TO is null" : "Response Status is not OK."));
+					}
+				}
+			}
+
+			private void sendNotificationToTalend(DeliveryNotificationTO dnto) throws IOException {
+				talendRequestTime = new Date();
+				// Call REST service of talend
+				String urlString = dlrURL.replace("%p", dnto.getMsisdn()).replace("%a",
+						SmppUtil.encodeToUtf8(dnto.getResponseDNString()));
+				URL url = new URL(urlString);
+				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+				conn.setRequestMethod("GET");
+				conn.setRequestProperty("Accept", "application/json");
+				int responseCode = 404;
+				do {
+					responseCode = conn.getResponseCode();
+				} while (responseCode != 200);
+				if (responseCode == 200) {
+					talendResponseTime = new Date();
+					if (logger.isDebugEnabled()) {
+						logger.debug(LoggingBean.logData(dnto, urlString, "200 OK", listenerStartTime,
+								responseReceivedTime, talendRequestTime, talendResponseTime));
+					}
+					// Update data in database
+					updateDataToDB(dnto);
+				}
+			}
+
+			private void updateDataToDB(DeliveryNotificationTO dnto) {
+				SmppData smppData = new SmppData();
+				smppData.setMsisdn(dnto.getMsisdn());
+				smppData.setTransactionId(transactionID);
+				smppData.setRespStatus(dnto.getDeliveryStatus().toString());
+				smppService.update(smppData);
 			}
 		}).start();
 	}
