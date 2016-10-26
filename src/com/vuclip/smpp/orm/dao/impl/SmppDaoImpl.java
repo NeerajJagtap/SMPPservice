@@ -3,6 +3,7 @@ package com.vuclip.smpp.orm.dao.impl;
 import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,8 +75,12 @@ public class SmppDaoImpl extends HibernateSupportDAO implements SmppDao {
 
 	@Override
 	public void update(SmppData smppData) {
-		getSession().update(smppData);
-		getSession().flush();
+		Session session = getSession();
+		session.beginTransaction();
+		session.update(smppData);
+		session.getTransaction().commit();
+		session.flush();
+		session.clear();
 	}
 
 	@Override
