@@ -18,9 +18,8 @@
 	<mvc:annotation-driven />
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-	<bean
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<!-- <bean class="org.springframework.beans.factory.config.PropertySourcesPlaceholderConfigurer"> -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	<!-- <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"> -->
 		<property name="locations">
 			<list>
 				<value>classpath:config.properties</value>
@@ -53,7 +52,7 @@
 				<prop key="hibernate.search.autoregister_listeners">${hibernate.search.autoregister_listeners}</prop>
 				<prop key="hibernate.bytecode.use_reflection_optimizer">${hibernate.bytecode.use_reflection_optimizer}</prop>
 				<prop key="hibernate.connection.zeroDateTimeBehavior">${hibernate.connection.zeroDateTimeBehavior}</prop>
-
+				
 				<prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
 				<prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
 				<prop key="hibernate.cache.use_query_cache">${hibernate.cache.use_query_cache}</prop>
@@ -64,9 +63,8 @@
 		</property>
 		<property name="packagesToScan" value="com.vuclip"></property>
 	</bean>
-
-	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource"
-		destroy-method="close">
+		
+	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
 		<constructor-arg ref="hikariConfig" />
 	</bean>
 
@@ -74,8 +72,7 @@
 		<property name="poolName" value="springBatchHikariCP" />
 		<property name="maximumPoolSize" value="50" />
 		<property name="connectionTestQuery" value="SELECT 1" />
-		<property name="dataSourceClassName"
-			value="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" />
+		<property name="dataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" />
 		<property name="dataSourceProperties">
 			<props>
 				<prop key="url">${jdbc.url}</prop>
