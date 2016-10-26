@@ -71,6 +71,7 @@
 	<bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
 		<property name="poolName" value="springBatchHikariCP" />
 		<property name="maximumPoolSize" value="50" />
+		<property name="idleTimeout" value="3600000" />
 		<property name="connectionTestQuery" value="SELECT 1" />
 		<property name="dataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" />
 		<property name="dataSourceProperties">
