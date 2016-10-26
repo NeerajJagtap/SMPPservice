@@ -126,7 +126,11 @@ public class CoreSMPPHandler {
 			}
 
 			private void updateDataToDB(DeliveryNotificationTO dnto, int responseCode, String urlString) {
-				SmppData smppData = smppService.getByMsisdn(dnto.getMsisdn());
+				SmppData smppData = new SmppData();
+				smppData.setMessageId(dnto.getMessageId());
+				smppData.setMsisdn(dnto.getMsisdn());
+				
+				smppData = smppService.getRecord(smppData);
 				smppData.setDlrURL(urlString);
 				smppData.setDnMessage(dnto.getResponseDNString());
 				smppData.setTalendResponse(Integer.valueOf(responseCode).toString());

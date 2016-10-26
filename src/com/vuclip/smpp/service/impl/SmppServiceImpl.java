@@ -50,4 +50,9 @@ public class SmppServiceImpl implements SmppService{
 		smppDao.delete(id);
 	}
 
+	@Override
+	public SmppData getRecord(SmppData smppData) {
+		return smppDao.getRecord(smppData);
+	}
+
 }

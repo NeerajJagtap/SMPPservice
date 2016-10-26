@@ -19,7 +19,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  */
 @Entity
 @Table(name = "smpp_data")
-@Cache(usage = CacheConcurrencyStrategy.READ_ONLY, region = "smpp_data")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "smpp_data")
 public class SmppData {
 
 	@Id

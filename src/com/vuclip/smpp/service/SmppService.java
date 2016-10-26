@@ -21,4 +21,6 @@ public interface SmppService {
 
 	public void delete(int id) ;
 
+	public SmppData getRecord(SmppData smppData);
+
 }
