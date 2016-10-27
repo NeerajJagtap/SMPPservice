@@ -1,4 +1,4 @@
-package com.vuclip.util;
+package com.vuclip.smpp.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;

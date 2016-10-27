@@ -63,5 +63,8 @@ public class SMPPExceptionConstant {
 	public static final String LISTENER_UNKNOWN_COMMAND_ID_EXCEPTION = "listener.unknown.command.id";
 
 	public static final String LISTENER_NOT_SYNC_EXCEPTION = "listener.not.sync";
-
+	
+	//Hibernate Exceptions
+	public static final String HIBERNATE_CONNECTION_EXCEPTION = "hibernate.connection";
+	
 }

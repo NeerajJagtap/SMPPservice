@@ -30,8 +30,8 @@ import com.vuclip.smpp.exceptions.SMPPException;
 import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.smpp.props.SMPPProperties;
 import com.vuclip.smpp.service.SmppService;
-import com.vuclip.util.LoggingBean;
-import com.vuclip.util.SmppUtil;
+import com.vuclip.smpp.util.LoggingBean;
+import com.vuclip.smpp.util.SmppUtil;
 
 /**
  * @author Vuclip
@@ -87,8 +87,8 @@ public class SmppController {
 		try {
 			coreSMPPHandler = new CoreSMPPHandler(smppProperties, dlr_url, transactionId, smppService);
 		} catch (IOException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Error Configurations Setting. " + e.getMessage());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Error Configurations Setting. " + e.getMessage());
 			}
 		}
 
@@ -109,15 +109,22 @@ public class SmppController {
 
 		HttpStatus returnStatus = HttpStatus.GATEWAY_TIMEOUT;
 		// Insert Data in local DB
-		returnStatus = insertDataInDB(to, PRICEPOINT, transactionId, smppRespTO, returnStatus);
+		try {
+			returnStatus = insertDataInDB(to, PRICEPOINT, transactionId, smppRespTO, returnStatus);
+		} catch (SMPPException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Exception : " + e.getMessage());
+			}
+			e.printStackTrace();
+		}
 
 		Date responseTime = new Date();
 		if (logger.isDebugEnabled()) {
 			if (smppRespTO != null) {
-				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(),
+				logger.info(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(),
 						smppRespTO.debugString(), requestTime, responseTime, to, transactionId, PRICEPOINT));
 			} else {
-				logger.debug(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO + "",
+				logger.info(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO + "",
 						requestTime, responseTime, to, transactionId, PRICEPOINT));
 			}
 		}
@@ -126,7 +133,7 @@ public class SmppController {
 	}
 
 	private HttpStatus insertDataInDB(String to, String PRICEPOINT, String transactionId, SMPPRespTO smppRespTO,
-			HttpStatus returnStatus) {
+			HttpStatus returnStatus) throws SMPPException {
 		// Set data for DB
 		SmppData smppData = new SmppData();
 		smppData.setMsisdn(to);
@@ -152,8 +159,8 @@ public class SmppController {
 		try {
 			responseTO = coreSMPPHandler.submitSMSRequest(smppReqTO);
 		} catch (SMPPException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Submit operation failed. " + e.getMessage());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Submit operation failed. " + e.getMessage());
 			}
 		}
 		return responseTO;

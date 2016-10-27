@@ -86,15 +86,6 @@
 			<artifactId>spring-batch-infrastructure</artifactId>
 			<version>2.1.9.RELEASE</version>
 		</dependency>
-
-
-		<!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>ejb3-persistence</artifactId> 
-			<version>1.0.2.GA</version> </dependency> <dependency> <groupId>org.hibernate</groupId> 
-			<artifactId>hibernate-annotations</artifactId> <version>3.4.0.GA</version> 
-			</dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-commons-annotations</artifactId> 
-			<version>3.1.0.GA</version> </dependency> <dependency> <groupId>org.hibernate</groupId> 
-			<artifactId>hibernate-core</artifactId> <version>3.3.2.GA</version> </dependency> -->
-		<!-- EHCache Core APIs -->
 		<!-- Hibernate -->
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
@@ -106,14 +97,12 @@
 			<artifactId>hibernate-commons-annotations</artifactId>
 			<version>4.0.5.Final</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<!-- <version>4.2.1.Final</version> -->
 			<version>4.3.0.Final</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
@@ -134,16 +123,14 @@
 			<version>4.3.5.Final</version>
 		</dependency>
 
-
 		<!-- EHCache uses slf4j for logging -->
-		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-simple</artifactId> 
-			<version>1.7.5</version> </dependency> -->
+		<dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-simple</artifactId> 
+			<version>1.7.5</version> </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.5.6</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
@@ -182,7 +169,6 @@
 		</dependency>
 
 		<!-- Mysql -->
-
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -190,14 +176,14 @@
 		</dependency>
 
 		<!-- AspectJ -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
 			<version>${org.aspectj-version}</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- CXF -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
 			<version>${cxf-version}</version>
@@ -206,10 +192,10 @@
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxws</artifactId>
 			<version>${cxf-version}</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- Jackson -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-jaxrs</artifactId>
 			<version>1.5.4</version>
@@ -219,7 +205,7 @@
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
 			<version>1.4.0</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- Validation -->
 		<dependency>
@@ -243,18 +229,18 @@
 
 
 		<!-- @Inject -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 			<version>1</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- Commons -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.3</version>
-		</dependency>
+		</dependency> -->
 
 
 		<!-- Servlet -->
@@ -264,8 +250,6 @@
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- <dependency> <groupId>org.apache.geronimo.specs</groupId> <artifactId>geronimo-servlet_3.0_spec</artifactId> 
-			<version>1.0</version> <scope>provided</scope> </dependency> -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-servlet_3.0_spec</artifactId>

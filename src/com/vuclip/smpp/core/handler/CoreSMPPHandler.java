@@ -18,8 +18,8 @@ import com.vuclip.smpp.exceptions.SMPPException;
 import com.vuclip.smpp.orm.dto.SmppData;
 import com.vuclip.smpp.props.SMPPProperties;
 import com.vuclip.smpp.service.SmppService;
-import com.vuclip.util.LoggingBean;
-import com.vuclip.util.SmppUtil;
+import com.vuclip.smpp.util.LoggingBean;
+import com.vuclip.smpp.util.SmppUtil;
 
 public class CoreSMPPHandler {
 
@@ -85,6 +85,11 @@ public class CoreSMPPHandler {
 								logger.debug("[" + dnto.getMsisdn()
 										+ "] DN Listener Error: Error while connecting to Talend.");
 							}
+						} catch (SMPPException e) {
+							if (logger.isDebugEnabled()) {
+								logger.debug("[" + dnto.getMsisdn() + "] DN Listener Error: Hibernate Exception : "
+										+ e.getMessage());
+							}
 						}
 					}
 				} else {
@@ -95,7 +100,7 @@ public class CoreSMPPHandler {
 				}
 			}
 
-			private void sendNotificationToTalend(DeliveryNotificationTO dnto) throws IOException {
+			private void sendNotificationToTalend(DeliveryNotificationTO dnto) throws IOException, SMPPException {
 				talendRequestTime = new Date();
 				// Split URL to encode separately
 				String splitURL[] = dlrURL.split("smscid");
@@ -112,12 +117,12 @@ public class CoreSMPPHandler {
 				talendResponseTime = new Date();
 				if (responseCode == 200) {
 					if (logger.isDebugEnabled()) {
-						logger.debug(LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(),
+						logger.info(LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(),
 								listenerStartTime, responseReceivedTime, talendRequestTime, talendResponseTime));
 					}
 				} else {
 					if (logger.isDebugEnabled()) {
-						logger.debug(LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(),
+						logger.info(LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(),
 								listenerStartTime, responseReceivedTime, talendRequestTime, talendResponseTime));
 					}
 				}
@@ -125,11 +130,12 @@ public class CoreSMPPHandler {
 				updateDataToDB(dnto, responseCode, urlString);
 			}
 
-			private void updateDataToDB(DeliveryNotificationTO dnto, int responseCode, String urlString) {
+			private void updateDataToDB(DeliveryNotificationTO dnto, int responseCode, String urlString)
+					throws SMPPException {
 				SmppData smppData = new SmppData();
 				smppData.setMessageId(dnto.getMessageId());
 				smppData.setMsisdn(dnto.getMsisdn());
-				
+
 				smppData = smppService.getRecord(smppData);
 				smppData.setDlrURL(urlString);
 				smppData.setDnMessage(dnto.getResponseDNString());

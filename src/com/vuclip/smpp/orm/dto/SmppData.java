@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.vuclip.smpp.orm.dto;
 
 import javax.persistence.Column;
