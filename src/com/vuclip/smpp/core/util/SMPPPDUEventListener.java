@@ -1,7 +1,7 @@
 package com.vuclip.smpp.core.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.smpp.ServerPDUEvent;
 import org.smpp.ServerPDUEventListener;
 import org.smpp.Session;
@@ -10,12 +10,11 @@ import org.smpp.pdu.PDU;
 import org.smpp.pdu.ValueNotSetException;
 import org.smpp.util.Queue;
 
-import com.vuclip.smpp.controllers.SmppController;
-
 public class SMPPPDUEventListener extends SmppObject implements ServerPDUEventListener {
 	Session session;
 	Queue requestEvents = new Queue();
-	private static final Logger logger = LoggerFactory.getLogger(SmppController.class);
+	
+	Logger smpplogger = LogManager.getLogger("smpplogger");
 
 	public SMPPPDUEventListener(Session session) {
 		this.session = session;
@@ -24,26 +23,26 @@ public class SMPPPDUEventListener extends SmppObject implements ServerPDUEventLi
 	public void handleEvent(ServerPDUEvent event) {
 		PDU pdu = event.getPDU();
 		if (pdu.isRequest()) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("async request received, enqueuing " + pdu.debugString());
+			if (smpplogger.isDebugEnabled()) {
+				smpplogger.debug("In SMPPPDUEventListener : async request received, enqueuing " + pdu.debugString());
 			}
 			synchronized (requestEvents) {
 				requestEvents.enqueue(event);
 				requestEvents.notify();
 			}
 		} else if (pdu.isResponse()) {
-			if (logger.isDebugEnabled()) {
+			if (smpplogger.isDebugEnabled()) {
 				try {
 
-					logger.debug(pdu.getData().getBuffer().toString());
+					smpplogger.debug(pdu.getData().getBuffer().toString());
 				} catch (ValueNotSetException e) {
-					logger.error(e.getMessage());
+					smpplogger.error(e.getMessage());
 				}
-				logger.debug("async response received " + pdu.debugString());
+				smpplogger.debug("In SMPPPDUEventListener : async response received " + pdu.debugString());
 			}
 		} else {
-			if (logger.isDebugEnabled()) {
-				logger.debug("pdu of unknown class (not request nor " + "response) received, discarding "
+			if (smpplogger.isDebugEnabled()) {
+				smpplogger.debug("In SMPPPDUEventListener : pdu of unknown class (not request nor " + "response) received, discarding "
 						+ pdu.debugString());
 			}
 		}

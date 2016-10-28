@@ -2,14 +2,14 @@ package com.vuclip.smpp.exceptions;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.vuclip.smpp.exceptions.constant.SMPPExceptionConstant;
 
 public class SMPPException extends Exception {
 
-	private static final Logger logger = LoggerFactory.getLogger(SMPPException.class);
+	Logger smpplogger = LogManager.getLogger("smpplogger");
 
 	private static final String COLON = " : ";
 
@@ -31,8 +31,8 @@ public class SMPPException extends Exception {
 			try {
 				properties = ExceptionPropertiesLoader.getPropertyInstance();
 			} catch (SMPPException e) {
-				if (logger.isErrorEnabled()) {
-					logger.error(e.getMessage());
+				if (smpplogger.isDebugEnabled()) {
+					smpplogger.debug("In SMPPException :"+e.getMessage());
 				}
 			}
 			StringBuilder message = new StringBuilder(EXCEPTION).append(properties.getProperty(exceptionId))

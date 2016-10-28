@@ -19,17 +19,13 @@
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	<!-- <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"> -->
 		<property name="locations">
 			<list>
 				<value>classpath:config.properties</value>
 				<value>classpath:smpp.properties</value>
-				<value>classpath:smpp-config.properties</value>
 				<value>classpath:exceptions.properties</value>
 			</list>
 		</property>
-		<!-- <property name="location" value="classpath:config.properties" /> <property 
-			name="ignoreResourceNotFound" value="true" /> -->
 	</bean>
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource"
@@ -57,7 +53,6 @@
 				<prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
 				<prop key="hibernate.cache.use_query_cache">${hibernate.cache.use_query_cache}</prop>
 				<prop key="hibernate.cache.region.factory_class">${hibernate.cache.region.factory_class}</prop>
-				<prop key="net.sf.ehcache.configurationResourceName">${net.sf.ehcache.configurationResourceName}</prop>
 				<!-- <prop key="hibernate.query.factory_class">${hibernate.query.factory_class}</prop> -->
 			</props>
 		</property>
