@@ -1,4 +1,4 @@
-package com.vuclip.util;
+package com.vuclip.smpp.util;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;

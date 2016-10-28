@@ -1,4 +1,4 @@
-package com.vuclip.util;
+package com.vuclip.smpp.util;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
