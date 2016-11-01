@@ -17,8 +17,8 @@ public interface SmppService {
 	public List<SmppData> getAllSmppData() throws SMPPException;
 
 	public int save(SmppData smppData) throws SMPPException;
-
-	public void update(SmppData smppData) throws SMPPException;
+	
+	public void update(SmppData smppData)throws SMPPException ;
 
 	public void delete(int id) throws SMPPException;
 

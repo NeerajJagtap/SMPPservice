@@ -8,8 +8,8 @@ import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.smpp.pdu.Address;
 import org.smpp.pdu.WrongLengthOfStringException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +34,15 @@ import com.vuclip.smpp.util.LoggingBean;
 import com.vuclip.smpp.util.SmppUtil;
 
 /**
- * @author Vuclip
+ * @author Devendra
  *
  */
 
 @Controller
 public class SmppController {
 
-	private static final Logger logger = LoggerFactory.getLogger(SmppController.class);
+	Logger smpplogger = LogManager.getLogger("smpplogger");
+	Logger sendsmslogger = LogManager.getLogger("sendsmslogger");
 
 	@Autowired
 	private LoggingBean loggingBean;
@@ -68,11 +69,18 @@ public class SmppController {
 	}
 
 	@RequestMapping(value = "/sendsms", method = RequestMethod.GET)
-	public ResponseEntity<?> getResp(HttpServletRequest request, HttpServletResponse response) {
+	public ResponseEntity<?> getResp(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		if (smpplogger.isDebugEnabled()) {
+			smpplogger.debug("In SmppController: /sendsms processing Start");
+		}
 		String to = request.getParameter("to");
 		String from = request.getParameter("from");
 		String meta_data = request.getParameter("meta-data");
 		String dlr_url = SmppUtil.decodeToUtf8(request.getParameter("dlr-url"));
+
+		if (smpplogger.isDebugEnabled()) {
+			smpplogger.debug("In SmppController: decoded URL :" + dlr_url);
+		}
 
 		HashMap<String, String> map = SmppUtil.getData(SmppUtil.decodeToUtf8(meta_data));
 		String message_payload = map.get("message_payload");
@@ -83,13 +91,12 @@ public class SmppController {
 		// fetching transaction id
 		String transactionId = SmppUtil.getTransactionIDForURL(dlr_url);
 		CoreSMPPHandler coreSMPPHandler = null;
+
 		// Initialize SMPP Handler
 		try {
 			coreSMPPHandler = new CoreSMPPHandler(smppProperties, dlr_url, transactionId, smppService);
 		} catch (IOException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Error Configurations Setting. " + e.getMessage());
-			}
+			smpplogger.debug("Error Configurations Setting. " + e.getMessage());
 		}
 
 		// Sending SMS to SMPP - Start
@@ -98,40 +105,37 @@ public class SmppController {
 			smppReqTO.setDestAddress(new Address((byte) 1, (byte) 0, to));
 			smppReqTO.setSourceAddress(new Address((byte) 0, (byte) 0, from));
 		} catch (WrongLengthOfStringException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Exception : " + e.getMessage());
-			}
+			smpplogger.debug("Exception : " + e.getMessage());
 			e.printStackTrace();
 		}
+
 		smppReqTO.setMessagePayload(message_payload);
+
 		// Send SMS
 		SMPPRespTO smppRespTO = sendSyncSMS(smppReqTO, coreSMPPHandler);
 
 		HttpStatus returnStatus = HttpStatus.GATEWAY_TIMEOUT;
 		// Insert Data in local DB
-		try {
-			returnStatus = insertDataInDB(to, PRICEPOINT, transactionId, smppRespTO, returnStatus);
-		} catch (SMPPException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Exception : " + e.getMessage());
-			}
-			e.printStackTrace();
-		}
+		returnStatus = insertDataInDB(to, PRICEPOINT, transactionId, smppRespTO, returnStatus);
 
 		Date responseTime = new Date();
-		if (logger.isDebugEnabled()) {
+		if (smpplogger.isDebugEnabled()) {
 			if (smppRespTO != null) {
-				logger.info(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(),
-						smppRespTO.debugString(), requestTime, responseTime, to, transactionId, PRICEPOINT));
+				String data = loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO.debugString(), requestTime, responseTime, to, transactionId,
+						PRICEPOINT);
+				smpplogger.debug("In SmppController: final response returned :"+data);
+				sendsmslogger.info(data);
 			} else {
-				logger.info(loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO + "",
-						requestTime, responseTime, to, transactionId, PRICEPOINT));
+				String data = loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO + "", requestTime, responseTime, to, transactionId, PRICEPOINT);
+				smpplogger.debug("In SmppController: final response returned :"+data);
+				sendsmslogger.info(data);
 			}
 		}
 
 		return new ResponseEntity(returnStatus);
 	}
 
+	
 	private HttpStatus insertDataInDB(String to, String PRICEPOINT, String transactionId, SMPPRespTO smppRespTO,
 			HttpStatus returnStatus) throws SMPPException {
 		// Set data for DB
@@ -146,10 +150,16 @@ public class SmppController {
 			smppData.setReqStatus("1");
 			smppData.setRespStatus(returnStatus + "");
 			smppService.save(smppData);
+			if (smpplogger.isDebugEnabled()) {
+				smpplogger.debug("In SmppController: Data inserted into DB. " + smppData.toString());
+			}
 		} else {
 			smppData.setReqStatus("1");
 			smppData.setRespStatus(returnStatus + "");
 			smppService.save(smppData);
+			if (smpplogger.isDebugEnabled()) {
+				smpplogger.debug("In SmppController: Data inserted into DB. " + smppData.toString());
+			}
 		}
 		return returnStatus;
 	}
@@ -159,9 +169,7 @@ public class SmppController {
 		try {
 			responseTO = coreSMPPHandler.submitSMSRequest(smppReqTO);
 		} catch (SMPPException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Submit operation failed. " + e.getMessage());
-			}
+			smpplogger.debug("Submit operation failed. " + e.getMessage());
 		}
 		return responseTO;
 	}

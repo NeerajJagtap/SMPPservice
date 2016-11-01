@@ -19,7 +19,6 @@
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	<!-- <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"> -->
 		<property name="locations">
 			<list>
 				<value>classpath:config.properties</value>
@@ -27,8 +26,6 @@
 				<value>classpath:exceptions.properties</value>
 			</list>
 		</property>
-		<!-- <property name="location" value="classpath:config.properties" /> <property 
-			name="ignoreResourceNotFound" value="true" /> -->
 	</bean>
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource"
