@@ -5,8 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.smpp.Data;
 
 import com.vuclip.smpp.core.service.CoreSMPPService;
@@ -23,7 +23,8 @@ import com.vuclip.smpp.util.SmppUtil;
 
 public class CoreSMPPHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(CoreSMPPHandler.class);
+	Logger smpplogger = LogManager.getLogger("smpplogger");
+	Logger dnlogger = LogManager.getLogger("dnlogger");
 
 	private CoreSMPPService coreSMPPService = null;
 
@@ -35,8 +36,7 @@ public class CoreSMPPHandler {
 
 	private SmppService smppService;
 
-	public CoreSMPPHandler(SMPPProperties smppProperties, String dlrURL, String transactionID, SmppService smppService)
-			throws IOException {
+	public CoreSMPPHandler(SMPPProperties smppProperties, String dlrURL, String transactionID, SmppService smppService) throws IOException {
 		coreSMPPService = new CoreSMPPServiceImpl(smppProperties);
 		this.smppService = smppService;
 		this.transactionID = transactionID;
@@ -68,46 +68,50 @@ public class CoreSMPPHandler {
 				listenerStartTime = new Date();
 				try {
 					dnto = coreSMPPService.receiveListener();
-				} catch (SMPPException e) {
-					if (logger.isDebugEnabled()) {
-						logger.debug(" DN Listener Exception in : " + e.getMessage());
+
+					if (smpplogger.isDebugEnabled()) {
+						smpplogger.debug("In CoreSMPPHandler:DN Listener started: ");
 					}
+
+				} catch (SMPPException e) {
+					smpplogger.debug("In CoreSMPPHandler:DN Listener Exception: " + e.getMessage());
 				}
 				responseReceivedTime = new Date();
 				if (null != dnto && Data.ESME_ROK == dnto.getDeliveryStatus()) {
-					System.out.println("Response : " + dnto.debugString());
-					if (null != submitMessagePDU && null != transactionID && null != dlrURL
-							&& submitMessagePDU.getRespStatus() == Data.ESME_ROK) {
+					if (smpplogger.isDebugEnabled()) {
+						smpplogger.debug("In CoreSMPPHandler:Response received from carrier: " + dnto.debugString());
+					}
+					if (null != submitMessagePDU && null != transactionID && null != dlrURL && submitMessagePDU.getRespStatus() == Data.ESME_ROK) {
 						try {
 							sendNotificationToTalend(dnto);
 						} catch (IOException e) {
-							if (logger.isDebugEnabled()) {
-								logger.debug("[" + dnto.getMsisdn()
-										+ "] DN Listener Error: Error while connecting to Talend.");
-							}
-						} catch (SMPPException e) {
-							if (logger.isDebugEnabled()) {
-								logger.debug("[" + dnto.getMsisdn() + "] DN Listener Error: Hibernate Exception : "
-										+ e.getMessage());
-							}
+							// if (smpplogger.isDebugEnabled()) {
+							smpplogger.debug("In CoreSMPPHandler:[" + dnto.getMsisdn() + "] DN Listener Error: Error while connecting to Talend.");
+							// }
+						} catch (Exception e) {
+							// if (smpplogger.isDebugEnabled()) {
+							smpplogger.debug("In CoreSMPPHandler:[" + dnto.getMsisdn() + "] DN Listener Error: Error while connecting to DB.");
+							// }
 						}
 					}
 				} else {
-					if (logger.isDebugEnabled()) {
-						logger.debug("[" + dnto.getMsisdn() + "] DN Listener NULL: "
-								+ (null == dnto ? "Delivery Notification TO is null" : "Response Status is not OK."));
-					}
+					// if (notice.isDebugEnabled()) {
+					smpplogger.debug("In CoreSMPPHandler:[" + dnto.getMsisdn() + "] DN Listener NULL: "
+							+ (null == dnto ? "Delivery Notification TO is null" : "Response Status is not OK."));
+					// }
 				}
 			}
 
-			private void sendNotificationToTalend(DeliveryNotificationTO dnto) throws IOException, SMPPException {
+			private void sendNotificationToTalend(DeliveryNotificationTO dnto) throws Exception {
+				if (smpplogger.isDebugEnabled()) {
+					smpplogger.debug("In CoreSMPPHandler : SendNotificationToTalend start: " + dnto.debugString());
+				}
 				talendRequestTime = new Date();
 				// Split URL to encode separately
 				String splitURL[] = dlrURL.split("smscid");
 
 				// Call REST service of talend
-				String urlString = splitURL[0].replace("%p", dnto.getMsisdn()).replace("%a",
-						SmppUtil.encodeToUtf8(dnto.getResponseDNString()))
+				String urlString = splitURL[0].replace("%p", dnto.getMsisdn()).replace("%a", SmppUtil.encodeToUtf8(dnto.getResponseDNString()))
 						+ SmppUtil.encodeToUtf8("smscid" + splitURL[1]);
 				URL url = new URL(urlString);
 				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -116,20 +120,25 @@ public class CoreSMPPHandler {
 				int responseCode = conn.getResponseCode();
 				talendResponseTime = new Date();
 				if (responseCode == 200) {
-					if (logger.isDebugEnabled()) {
-						logger.info(LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(),
-								listenerStartTime, responseReceivedTime, talendRequestTime, talendResponseTime));
-					}
+					// if (notice.isDebugEnabled()) {
+					String data = LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(), listenerStartTime, responseReceivedTime, talendRequestTime,
+							talendResponseTime);
+					smpplogger.debug(data);
+					dnlogger.info(data);
+					// }
 				} else {
-					if (logger.isDebugEnabled()) {
-						logger.info(LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(),
-								listenerStartTime, responseReceivedTime, talendRequestTime, talendResponseTime));
-					}
+					// if (notice.isDebugEnabled()) {
+					String data = LoggingBean.logData(dnto, urlString, Integer.valueOf(responseCode).toString(), listenerStartTime, responseReceivedTime, talendRequestTime,
+							talendResponseTime);
+					smpplogger.debug(data);
+					dnlogger.info(data);
+					// }
 				}
 				// Update data in database
 				updateDataToDB(dnto, responseCode, urlString);
 			}
 
+			
 			private void updateDataToDB(DeliveryNotificationTO dnto, int responseCode, String urlString)
 					throws SMPPException {
 				SmppData smppData = new SmppData();
@@ -140,7 +149,12 @@ public class CoreSMPPHandler {
 				smppData.setDlrURL(urlString);
 				smppData.setDnMessage(dnto.getResponseDNString());
 				smppData.setTalendResponse(Integer.valueOf(responseCode).toString());
+				if (smpplogger.isDebugEnabled()) {
+					smpplogger.debug("In CoreSMPPHandler : updateDataToDB after DN Receive: " + smppData.toString());
+				}
+				
 				smppService.update(smppData);
+			
 			}
 		}).start();
 	}
