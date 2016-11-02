@@ -22,13 +22,15 @@ public class SMPPReqTO {
 	private byte smDefaultMsgId = 0;
 
 	public String debugString() {
-		return "Request[System_Type:" + systemType + "|Service_Type:" + serviceType + "|Source_Address:"
-				+ sourceAddress.debugString() + "|Destination_Address:" + destAddress.debugString()
-				+ "|Schedule_Delivery_Time:" + scheduleDeliveryTime + "|Validity_Period:" + validityPeriod
-				+ "|Short_Message:" + shortMessage + "|Message_Payload:" + messagePayload + "|Message_Id:"
-				+ messageId + "|ESM_Class:" + esmClass + "|Protocol_Id:" + protocolId + "|Priority_Flag:"
-				+ priorityFlag + "|Register_Delivery:" + registeredDelivery + "|Replace_If_Present_Flag:"
-				+ replaceIfPresentFlag + "|Data_Coding:" + dataCoding + "|Default_Msg_Id:" + smDefaultMsgId + "]";
+		return new StringBuilder("Request[System_Type:").append(systemType).append("|Service_Type:").append(serviceType)
+				.append("|Source_Address:").append(sourceAddress.debugString()).append("|Destination_Address:")
+				.append(destAddress.debugString()).append("|Schedule_Delivery_Time:").append(scheduleDeliveryTime)
+				.append("|Validity_Period:").append(validityPeriod).append("|Short_Message:").append(shortMessage)
+				.append("|Message_Payload:").append(messagePayload).append("|Message_Id:").append(messageId)
+				.append("|ESM_Class:").append(esmClass).append("|Protocol_Id:").append(protocolId)
+				.append("|Priority_Flag:").append(priorityFlag).append("|Register_Delivery:").append(registeredDelivery)
+				.append("|Replace_If_Present_Flag:").append(replaceIfPresentFlag).append("|Data_Coding:")
+				.append(dataCoding).append("|Default_Msg_Id:").append(smDefaultMsgId).append("]").toString();
 	}
 
 	public String getSystemType() {

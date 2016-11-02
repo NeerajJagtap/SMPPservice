@@ -14,8 +14,9 @@ public class DeliveryNotificationTO {
 
 	public String debugString() {
 
-		return "Deliver SM : msisdn : " + msisdn + " Message Id : " + messageId + " Response String : "
-				+ responseDNString + " Response to Carrier : " + responseToCarrier;
+		return new StringBuilder("Deliver SM : msisdn : ").append(msisdn).append(" Message Id : ").append(messageId)
+				.append(" Response String : ").append(responseDNString).append(" Response to Carrier : ")
+				.append(responseToCarrier).toString();
 	}
 
 	public String getResponseDNString() {

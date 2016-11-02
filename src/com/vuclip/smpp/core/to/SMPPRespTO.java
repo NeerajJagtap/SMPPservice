@@ -15,9 +15,10 @@ public class SMPPRespTO {
 	private String responseMsgId;
 
 	public String debugString() {
-		return "Response:[Transaction_Id:" + transId + "|DLR_Url:" + dlrURL + "|Response_Command_Status:"
-				+ respStatus + "|Response_Body:" + resposeMessage + "|Response_Command_Id:" + responseId
-				+ "|Response_Message_Id:" + responseMsgId + "]";
+		return new StringBuilder("Response:[Transaction_Id:").append(transId).append("|DLR_Url:").append(dlrURL)
+				.append("|Response_Command_Status:").append(respStatus).append("|Response_Body:").append(resposeMessage)
+				.append("|Response_Command_Id:").append(responseId).append("|Response_Message_Id:")
+				.append(responseMsgId).append("]").toString();
 	}
 
 	public String getTransId() {
