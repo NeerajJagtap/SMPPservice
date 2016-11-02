@@ -56,7 +56,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 
 	private SMPPReqTO smppReqTO;
 
-	private String msisdn;
+	private String msisdn = null;
 
 	public CoreSMPPServiceImpl(SMPPProperties smppProperties) {
 		this.smppProperties = smppProperties;
