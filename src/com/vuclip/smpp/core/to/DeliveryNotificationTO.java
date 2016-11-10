@@ -2,6 +2,8 @@ package com.vuclip.smpp.core.to;
 
 public class DeliveryNotificationTO {
 
+	private boolean isMO = false;
+
 	private String responseDNString;
 
 	private Integer deliveryStatus;
@@ -17,6 +19,14 @@ public class DeliveryNotificationTO {
 		return new StringBuilder("Deliver SM : msisdn : ").append(msisdn).append(" Message Id : ").append(messageId)
 				.append(" Response String : ").append(responseDNString).append(" Response to Carrier : ")
 				.append(responseToCarrier).toString();
+	}
+
+	public boolean isMO() {
+		return isMO;
+	}
+
+	public void setMO(boolean isMO) {
+		this.isMO = isMO;
 	}
 
 	public String getResponseDNString() {

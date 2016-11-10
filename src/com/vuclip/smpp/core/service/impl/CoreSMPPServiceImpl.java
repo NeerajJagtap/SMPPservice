@@ -58,6 +58,10 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 
 	private String msisdn = null;
 
+	private static final String MESSAGE_ID = "id:";
+
+	private Object mutex = new Object();
+
 	public CoreSMPPServiceImpl(SMPPProperties smppProperties) {
 		this.smppProperties = smppProperties;
 	}
@@ -123,8 +127,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			request = new BindTransciever();
 		} else {
 			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Invalid bind mode, expected t, r or tr, got " + smppBindOption
-						+ ". Operation canceled.");
+				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn
+						+ "] Invalid bind mode, expected t, r or tr, got " + smppBindOption + ". Operation canceled.");
 			}
 		}
 		// set values
@@ -151,14 +155,16 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		// send the request
 		try {
 			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM request " + request.debugString());
+				smpplogger
+						.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM request " + request.debugString());
 			}
 			if (smppProperties.isAsynchorized()) {
 				session.submit(request);
 			} else {
 				response = session.submit(request);
 				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM response " + response.debugString());
+					smpplogger.debug(
+							"In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM response " + response.debugString());
 				}
 				smppRespTO = new SMPPRespTO();
 				smppRespTO.setRespStatus(response.getCommandStatus());
@@ -174,9 +180,9 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		} catch (IOException e) {
 			throw new SMPPException(SMPPExceptionConstant.SUBMIT_SM_IO_EXCEPTION, e.getMessage());
 		}
-		
+
 		System.out.println("Submit SM End");
-		
+
 		if (smpplogger.isDebugEnabled()) {
 			smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit SM End.");
 		}
@@ -221,6 +227,12 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 	}
 
 	public boolean enquire() throws SMPPException {
+		if (null == session) {
+			return false;
+		}
+		if (!session.isBound()) {
+			return false;
+		}
 		if (smpplogger.isDebugEnabled()) {
 			smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link Start.");
 		}
@@ -229,13 +241,15 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			EnquireLink request = new EnquireLink();
 			EnquireLinkResp response;
 			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link request " + request.debugString());
+				smpplogger.debug(
+						"In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link request " + request.debugString());
 			}
 			if (smppProperties.isAsynchorized()) {
 				session.enquireLink(request);
 			} else {
 				response = session.enquireLink(request);
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link response " + response.debugString());
+				smpplogger.debug(
+						"In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link response " + response.debugString());
 				return response.getCommandStatus() == Data.ESME_ROK ? true : false;
 			}
 			return true;
@@ -257,17 +271,19 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		try {
 			// send the request
 			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : "+Thread.currentThread().getName() + "[" + msisdn + "] : Going to unbind. Session.");
+				smpplogger.debug("In CoreSMPPServiceImpl : " + Thread.currentThread().getName() + "[" + msisdn
+						+ "] : Going to unbind. Session.");
 			}
 			/**
 			 * if (session.getReceiver().isReceiver()) {
 			 * log.log(Thread.currentThread().getName() + ": It can take a while
 			 * to stop the receiver."); }
 			 **/
-			UnbindResp response = session.unbind();
+			UnbindResp response = null;
+			response = session.unbind();
 			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : "+Thread.currentThread().getName() + "[" + msisdn + "] : Unbind response "
-						+ response.debugString());
+				smpplogger.debug("In CoreSMPPServiceImpl : " + Thread.currentThread().getName() + "[" + msisdn
+						+ "] : Unbind response " + (null != response ? response.debugString() : "is null"));
 			}
 		} catch (IOException e) {
 			throw new SMPPException(SMPPExceptionConstant.UNBIND_IO_EXCEPTION, e.getMessage());
@@ -284,102 +300,98 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 	}
 
 	public DeliveryNotificationTO receiveListener() throws SMPPException {
-		if (null != session && session.isBound()) {
-			try {
-				// if (!session.isBound()) {
-				// this.bind();
-				// }
-				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Receiver Started.");
-				}
-				
-				// With Data.RECEIVE_BLOCKING thread will block forever to receive
-				PDU pdu = null;
-				
-				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In CoreSMPPServiceImpl : Going to receive a PDU. ");
-				}
-				
-				if (smppProperties.isAsynchorized()) {
-					ServerPDUEvent pduEvent = eventListener.getRequestEvent(Data.RECEIVE_BLOCKING);
-					if (pduEvent != null) {
-						pdu = pduEvent.getPDU();
-					}
-				} else {
-					pdu = session.receive(Data.RECEIVE_BLOCKING);
-				}
-				// Take only Deliver SM
-				if (pdu != null && pdu.getCommandId() == Data.DELIVER_SM && pdu.getCommandStatus() == Data.ESME_ROK) {
-					DeliverSM deliverSM = (DeliverSM) pdu;
-					DeliveryNotificationTO dnto = new DeliveryNotificationTO();
-					
-					if (smpplogger.isDebugEnabled()) {
-						smpplogger.debug("In CoreSMPPServiceImpl : Received PDU " + pdu.debugString());
-					}
-					
-					if (deliverSM.isRequest()) {
-						Response response = ((Request) deliverSM).getResponse();
-						// respond with default response
-						if (smpplogger.isDebugEnabled()) {
-							smpplogger.debug("In CoreSMPPServiceImpl : Going to send default response to request " + response.debugString());
-						}
-						
-						session.respond(response);
-						dnto.setResponseToCarrier(response.debugString());
-					}
-					dnto.setMsisdn(deliverSM.getSourceAddr().getAddress());
-					String shortMessage = deliverSM.getShortMessage();
-					dnto.setResponseDNString(shortMessage);
-					dnto.setDeliveryStatus(deliverSM.getCommandStatus());
-					dnto.setMessageId(getMessageIDFromString(shortMessage));
-					unbind();
-					session.close();
-					if (smpplogger.isDebugEnabled()) {
-						smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Receiver End Success.");
-					}
-					return dnto;
-				} else {
-					if (smpplogger.isDebugEnabled()) {
-						smpplogger.debug("In CoreSMPPServiceImpl : No PDU received this time.");
-					}
-				}
-				unbind();
-				session.close();
-			} catch (IOException e) {
-				throw new SMPPException(SMPPExceptionConstant.LISTENER_IO_EXCEPTION, e.getMessage());
-			} catch (SMPPException e) {
-				throw new SMPPException(SMPPExceptionConstant.LISTENER_SMPP_NESTED_EXCEPTION, e.getMessage());
-			} catch (WrongSessionStateException e) {
-				throw new SMPPException(SMPPExceptionConstant.LISTENER_WRONG_SESSION_STATE_EXCEPTION,
-						e.getMessage());
-			} catch (ValueNotSetException e) {
-				throw new SMPPException(SMPPExceptionConstant.LISTENER_VALUE_NOT_SET_EXCEPTION, e.getMessage());
-			} catch (UnknownCommandIdException e) {
-				throw new SMPPException(SMPPExceptionConstant.LISTENER_UNKNOWN_COMMAND_ID_EXCEPTION,
-						e.getMessage());
-			} catch (TimeoutException e) {
-				throw new SMPPException(SMPPExceptionConstant.LISTENER_TIMEOUT_EXCEPTION, e.getMessage());
-			} catch (NotSynchronousException e) {
-				throw new SMPPException(SMPPExceptionConstant.LISTENER_NOT_SYNC_EXCEPTION, e.getMessage());
-			} catch (PDUException e) {
-				throw new SMPPException(SMPPExceptionConstant.LISTENER_PDU_EXCEPTION, e.getMessage());
+		try {
+			if (!session.isBound()) {
+				this.bind();
 			}
+			if (smpplogger.isDebugEnabled()) {
+				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Receiver Started.");
+			}
+
+			// With Data.RECEIVE_BLOCKING thread will block forever to
+			// receive
+			PDU pdu = null;
+
+			if (smpplogger.isDebugEnabled()) {
+				smpplogger.debug("In CoreSMPPServiceImpl : Going to receive a PDU. ");
+			}
+
+			if (smppProperties.isAsynchorized()) {
+				ServerPDUEvent pduEvent = eventListener.getRequestEvent(Data.RECEIVE_BLOCKING);
+				if (pduEvent != null) {
+					pdu = pduEvent.getPDU();
+				}
+			} else {
+				pdu = session.receive(100);
+			}
+			// Take only Deliver SM
+			if (pdu != null && pdu.getCommandId() == Data.DELIVER_SM && pdu.getCommandStatus() == Data.ESME_ROK) {
+				DeliverSM deliverSM = (DeliverSM) pdu;
+				DeliveryNotificationTO dnto = new DeliveryNotificationTO();
+
+				if (smpplogger.isDebugEnabled()) {
+					smpplogger.debug("In CoreSMPPServiceImpl : Received PDU " + pdu.debugString());
+				}
+
+				if (deliverSM.isRequest()) {
+					Response response = ((Request) deliverSM).getResponse();
+					// respond with default response
+					if (smpplogger.isDebugEnabled()) {
+						smpplogger.debug("In CoreSMPPServiceImpl : Going to send default response to request "
+								+ response.debugString());
+					}
+
+					session.respond(response);
+					dnto.setResponseToCarrier(response.debugString());
+				}
+				dnto.setMsisdn(deliverSM.getSourceAddr().getAddress());
+				String shortMessage = deliverSM.getShortMessage();
+				dnto.setResponseDNString(shortMessage);
+				dnto.setDeliveryStatus(deliverSM.getCommandStatus());
+				String messageIDFromString = getMessageIDFromString(shortMessage);
+				dnto.setMessageId(messageIDFromString);
+				dnto.setMO(null != messageIDFromString ? false : true);
+				if (smpplogger.isDebugEnabled()) {
+					smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Receiver End Success.");
+				}
+				return dnto;
+			} else {
+				if (smpplogger.isDebugEnabled()) {
+					smpplogger.debug("In CoreSMPPServiceImpl : No PDU received this time.");
+				}
+			}
+		} catch (IOException e) {
+			throw new SMPPException(SMPPExceptionConstant.LISTENER_IO_EXCEPTION, e.getMessage());
+		} catch (WrongSessionStateException e) {
+			throw new SMPPException(SMPPExceptionConstant.LISTENER_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
+		} catch (ValueNotSetException e) {
+			throw new SMPPException(SMPPExceptionConstant.LISTENER_VALUE_NOT_SET_EXCEPTION, e.getMessage());
+		} catch (UnknownCommandIdException e) {
+			throw new SMPPException(SMPPExceptionConstant.LISTENER_UNKNOWN_COMMAND_ID_EXCEPTION, e.getMessage());
+		} catch (TimeoutException e) {
+			throw new SMPPException(SMPPExceptionConstant.LISTENER_TIMEOUT_EXCEPTION, e.getMessage());
+		} catch (NotSynchronousException e) {
+			throw new SMPPException(SMPPExceptionConstant.LISTENER_NOT_SYNC_EXCEPTION, e.getMessage());
+		} catch (PDUException e) {
+			throw new SMPPException(SMPPExceptionConstant.LISTENER_PDU_EXCEPTION, e.getMessage());
 		}
 		return null;
 	}
 
 	private String getMessageIDFromString(String shortMessage) {
-		return shortMessage.split(" ")[0].split(":")[1];
+		if (shortMessage.contains(MESSAGE_ID)) {
+			return shortMessage.split(" ")[0].split(":")[1];
+		} else {
+			return null;
+		}
 	}
 
 	public SMPPRespTO submitMessagePDU() throws SMPPException {
-		boolean bindSuccess = false;
-		if (session == null || (session != null && !session.isBound())) {
-			bindSuccess = bind();
-		}
-		if (bindSuccess) {
+		synchronized (mutex) {
+			if (!enquire()) {
+				bind();
+			}
 			return submitSync();
 		}
-		return null;
 	}
 }
