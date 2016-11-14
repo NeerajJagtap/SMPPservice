@@ -46,7 +46,7 @@ import com.vuclip.smpp.props.SMPPProperties;
 
 public class CoreSMPPServiceImpl implements CoreSMPPService {
 
-	Logger smpplogger = LogManager.getLogger("smpplogger");
+	private static final Logger SMPPLOGGER = LogManager.getLogger("smpplogger");
 
 	private volatile Session session = null;
 
@@ -67,8 +67,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 	private boolean bind() throws SMPPException {
 		try {
 			System.out.println("Bind Start");
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind request Start.");
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind request Start.");
 			}
 			BindRequest request = null;
 			BindResponse response = null;
@@ -77,8 +77,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			// SetParameters
 			request = setBindParams(request);
 			// send the request
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind request " + request.debugString());
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind request " + request.debugString());
 			}
 			if (smppProperties.isAsynchorized()) {
 				eventListener = new SMPPPDUEventListener(session);
@@ -86,8 +86,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			} else {
 				response = session.bind(request);
 			}
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind response " + response.debugString());
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind response " + response.debugString());
 			}
 		} catch (PDUException e) {
 			throw new SMPPException(SMPPExceptionConstant.BIND_PDU_EXCEPTION, e.getMessage());
@@ -99,8 +99,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			throw new SMPPException(SMPPExceptionConstant.BIND_IO_EXCEPTION, e.getMessage());
 		}
 		System.out.println("Bind End");
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("[" + msisdn + "] Bind request End.");
+		if (SMPPLOGGER.isDebugEnabled()) {
+			SMPPLOGGER.debug("[" + msisdn + "] Bind request End.");
 		}
 		return session.isBound();
 
@@ -115,8 +115,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		} else if (smppBindOption.compareToIgnoreCase("tr") == 0) {
 			request = new BindTransciever();
 		} else {
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn
 						+ "] Invalid bind mode, expected t, r or tr, got " + smppBindOption + ". Operation canceled.");
 			}
 		}
@@ -131,8 +131,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 	private SMPPRespTO submitSync(SMPPReqTO smppReqTO) throws SMPPException {
 		System.out.println("Submit SM Start.");
 		SMPPRespTO smppRespTO = null;
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit SM Start.");
+		if (SMPPLOGGER.isDebugEnabled()) {
+			SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit SM Start.");
 		}
 		SubmitSM request = new SubmitSM();
 		SubmitSMResp response;
@@ -143,16 +143,16 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		setSubmitParameters(request, smppReqTO);
 		// send the request
 		try {
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER
 						.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM request " + request.debugString());
 			}
 			if (smppProperties.isAsynchorized()) {
 				session.submit(request);
 			} else {
 				response = session.submit(request);
-				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug(
+				if (SMPPLOGGER.isDebugEnabled()) {
+					SMPPLOGGER.debug(
 							"In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM response " + response.debugString());
 				}
 				smppRespTO = new SMPPRespTO();
@@ -177,8 +177,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 
 		System.out.println("Submit SM End");
 
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit SM End.");
+		if (SMPPLOGGER.isDebugEnabled()) {
+			SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit SM End.");
 		}
 		return smppRespTO;
 	}
@@ -227,22 +227,22 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		if (!session.isBound()) {
 			return false;
 		}
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link Start.");
+		if (SMPPLOGGER.isDebugEnabled()) {
+			SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link Start.");
 		}
 		try {
 
 			EnquireLink request = new EnquireLink();
 			EnquireLinkResp response;
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug(
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug(
 						"In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link request " + request.debugString());
 			}
 			if (smppProperties.isAsynchorized()) {
 				session.enquireLink(request);
 			} else {
 				response = session.enquireLink(request);
-				smpplogger.debug(
+				SMPPLOGGER.debug(
 						"In CoreSMPPServiceImpl : [" + msisdn + "] Enquire Link response " + response.debugString());
 				return response.getCommandStatus() == Data.ESME_ROK ? true : false;
 			}
@@ -264,8 +264,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		}
 		try {
 			// send the request
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : " + Thread.currentThread().getName() + "[" + msisdn
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : " + Thread.currentThread().getName() + "[" + msisdn
 						+ "] : Going to unbind. Session.");
 			}
 			/**
@@ -275,8 +275,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			 **/
 			UnbindResp response = null;
 			response = session.unbind();
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : " + Thread.currentThread().getName() + "[" + msisdn
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : " + Thread.currentThread().getName() + "[" + msisdn
 						+ "] : Unbind response " + (null != response ? response.debugString() : "is null"));
 			}
 		} catch (IOException e) {
@@ -298,14 +298,14 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			if (!session.isBound()) {
 				this.bind();
 			}
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : Receiver Started.");
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : Receiver Started.");
 			}
 
 			PDU pdu = null;
 
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : Going to receive a PDU. ");
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : Going to receive a PDU. ");
 			}
 			if (smppProperties.isAsynchorized()) {
 				ServerPDUEvent pduEvent = eventListener.getRequestEvent(Data.RECEIVE_BLOCKING);
@@ -320,15 +320,15 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 				DeliverSM deliverSM = (DeliverSM) pdu;
 				DeliveryNotificationTO dnto = new DeliveryNotificationTO();
 
-				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In CoreSMPPServiceImpl : Received PDU " + pdu.debugString());
+				if (SMPPLOGGER.isDebugEnabled()) {
+					SMPPLOGGER.debug("In CoreSMPPServiceImpl : Received PDU " + pdu.debugString());
 				}
 
 				if (deliverSM.isRequest()) {
 					Response response = ((Request) deliverSM).getResponse();
 					// respond with default response
-					if (smpplogger.isDebugEnabled()) {
-						smpplogger.debug("In CoreSMPPServiceImpl : Going to send default response to request "
+					if (SMPPLOGGER.isDebugEnabled()) {
+						SMPPLOGGER.debug("In CoreSMPPServiceImpl : Going to send default response to request "
 								+ response.debugString());
 					}
 					session.respond(response);
@@ -341,13 +341,13 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 				String messageIDFromString = getMessageIDFromString(shortMessage);
 				dnto.setMessageId(messageIDFromString);
 				dnto.setMO(null != messageIDFromString ? false : true);
-				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In CoreSMPPServiceImpl : Receiver End Success.");
+				if (SMPPLOGGER.isDebugEnabled()) {
+					SMPPLOGGER.debug("In CoreSMPPServiceImpl : Receiver End Success.");
 				}
 				return dnto;
 			} else {
-				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In CoreSMPPServiceImpl : No PDU received this time.");
+				if (SMPPLOGGER.isDebugEnabled()) {
+					SMPPLOGGER.debug("In CoreSMPPServiceImpl : No PDU received this time.");
 				}
 			}
 		} catch (IOException e) {

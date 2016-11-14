@@ -41,8 +41,9 @@ import com.vuclip.smpp.util.SmppUtil;
 @Controller
 public class SmppController {
 
-	Logger smpplogger = LogManager.getLogger("smpplogger");
-	Logger sendsmslogger = LogManager.getLogger("sendsmslogger");
+	private static final Logger SMPPLOGGER = LogManager.getLogger("smpplogger");
+
+	private static final Logger sendsmslogger = LogManager.getLogger("sendsmslogger");
 
 	@Autowired
 	private LoggingBean loggingBean;
@@ -72,16 +73,16 @@ public class SmppController {
 
 	@RequestMapping(value = "/sendsms", method = RequestMethod.GET)
 	public ResponseEntity<?> getResp(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("In SmppController: /sendsms processing Start");
+		if (SMPPLOGGER.isDebugEnabled()) {
+			SMPPLOGGER.debug("In SmppController: /sendsms processing Start");
 		}
 		String to = request.getParameter("to");
 		String from = request.getParameter("from");
 		String meta_data = request.getParameter("meta-data");
 		String dlr_url = SmppUtil.decodeToUtf8(request.getParameter("dlr-url"));
 
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("In SmppController: decoded URL :" + dlr_url);
+		if (SMPPLOGGER.isDebugEnabled()) {
+			SMPPLOGGER.debug("In SmppController: decoded URL :" + dlr_url);
 		}
 
 		HashMap<String, String> map = SmppUtil.getData(SmppUtil.decodeToUtf8(meta_data));
@@ -96,7 +97,7 @@ public class SmppController {
 			try {
 				coreSMPPHandler = new CoreSMPPHandler(smppProperties, smppService);
 			} catch (IOException e) {
-				smpplogger.debug("Error Configurations Setting. " + e.getMessage());
+				SMPPLOGGER.debug("Error Configurations Setting. " + e.getMessage());
 			}
 		}
 		SMPPRespTO expectedSMPPRespTO = new SMPPRespTO();
@@ -110,7 +111,7 @@ public class SmppController {
 			smppReqTO.setDestAddress(new Address((byte) 1, (byte) 0, to));
 			smppReqTO.setSourceAddress(new Address((byte) 0, (byte) 0, from));
 		} catch (WrongLengthOfStringException e) {
-			smpplogger.debug("Exception : " + e.getMessage());
+			SMPPLOGGER.debug("Exception : " + e.getMessage());
 			e.printStackTrace();
 		}
 		smppReqTO.setMessagePayload(message_payload);
@@ -124,16 +125,16 @@ public class SmppController {
 		returnStatus = insertDataInDB(smppRespTO, returnStatus);
 
 		Date responseTime = new Date();
-		if (smpplogger.isDebugEnabled()) {
+		if (SMPPLOGGER.isDebugEnabled()) {
 			if (smppRespTO != null) {
 				String data = loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(),
 						smppRespTO.debugString(), requestTime, responseTime, to, transactionId, PRICEPOINT);
-				smpplogger.debug("In SmppController: final response returned :" + data);
+				SMPPLOGGER.debug("In SmppController: final response returned :" + data);
 				sendsmslogger.info(data);
 			} else {
 				String data = loggingBean.logData(request, returnStatus + "", smppReqTO.debugString(), smppRespTO + "",
 						requestTime, responseTime, to, transactionId, PRICEPOINT);
-				smpplogger.debug("In SmppController: final response returned :" + data);
+				SMPPLOGGER.debug("In SmppController: final response returned :" + data);
 				sendsmslogger.info(data);
 			}
 		}
@@ -155,15 +156,15 @@ public class SmppController {
 			smppData.setReqStatus("1");
 			smppData.setRespStatus(returnStatus + "");
 			smppService.save(smppData);
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In SmppController: Data inserted into DB. " + smppData.toString());
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In SmppController: Data inserted into DB. " + smppData.toString());
 			}
 		} else {
 			smppData.setReqStatus("1");
 			smppData.setRespStatus(returnStatus + "");
 			smppService.save(smppData);
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In SmppController: Data inserted into DB. " + smppData.toString());
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("In SmppController: Data inserted into DB. " + smppData.toString());
 			}
 		}
 		return returnStatus;
@@ -174,7 +175,7 @@ public class SmppController {
 		try {
 			responseTO = coreSMPPHandler.submitSMSRequest(smppReqTO);
 		} catch (SMPPException e) {
-			smpplogger.debug("Submit operation failed. " + e.getMessage());
+			SMPPLOGGER.debug("Submit operation failed. " + e.getMessage());
 		}
 		return responseTO;
 	}
