@@ -45,8 +45,7 @@ public class CoreSMPPHandler {
 	}
 
 	public SMPPRespTO submitSMSRequest(SMPPReqTO smppReqTO) throws SMPPException {
-		coreSMPPService.setSmppReqTO(smppReqTO);
-		submitMessagePDU = coreSMPPService.submitMessagePDU();
+		submitMessagePDU = coreSMPPService.submitMessagePDU(smppReqTO);
 		if (!isReceiverActive) {
 			runReceiverListener();
 		}
@@ -67,6 +66,7 @@ public class CoreSMPPHandler {
 			@Override
 			public void run() {
 				while (true) {
+					isReceiverActive = true;
 					DeliveryNotificationTO dnto = listener();
 					responseReceivedTime = new Date();
 					if (null != dnto && Data.ESME_ROK == dnto.getDeliveryStatus()) {
@@ -77,11 +77,13 @@ public class CoreSMPPHandler {
 						try {
 							sendNotificationToTalend(dnto);
 						} catch (IOException e) {
+							e.printStackTrace();
 							if (smpplogger.isDebugEnabled()) {
 								smpplogger.debug("In CoreSMPPHandler:[" + dnto.getMsisdn()
 										+ "] DN Listener Error: Error while connecting to Talend.");
 							}
 						} catch (Exception e) {
+							e.printStackTrace();
 							if (smpplogger.isDebugEnabled()) {
 								smpplogger.debug("In CoreSMPPHandler:[" + dnto.getMsisdn()
 										+ "] DN Listener Error: Error while connecting to DB.");
@@ -102,8 +104,7 @@ public class CoreSMPPHandler {
 				// Start Time
 				listenerStartTime = new Date();
 				try {
-					dnto = coreSMPPService.receiveListener();
-					isReceiverActive = true;
+					dnto = coreSMPPService.getDeliveryNotification();
 					if (smpplogger.isDebugEnabled()) {
 						smpplogger.debug("In CoreSMPPHandler:DN Listener started: ");
 					}
@@ -201,12 +202,8 @@ public class CoreSMPPHandler {
 				SmppData smppData = new SmppData();
 				smppData.setMessageId(dnto.getMessageId());
 				smppData.setMsisdn(dnto.getMsisdn());
-
-				smppData = smppService.getRecord(smppData);
-				smppData.setDnMessage(dnto.getResponseDNString());
-				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In CoreSMPPHandler : updateDataToDB after DN Receive: " + smppData.toString());
-				}
+				System.out.println(smppData.toString());
+				
 				smppData = smppService.getRecord(smppData);
 				return smppData.getDlrURL();
 			}

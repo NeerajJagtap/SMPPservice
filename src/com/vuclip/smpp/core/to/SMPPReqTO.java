@@ -21,6 +21,8 @@ public class SMPPReqTO {
 	private byte dataCoding = 0;
 	private byte smDefaultMsgId = 0;
 
+	private SMPPRespTO expetedResponseTO;
+
 	public String debugString() {
 		return new StringBuilder("Request[System_Type:").append(systemType).append("|Service_Type:").append(serviceType)
 				.append("|Source_Address:").append(sourceAddress.debugString()).append("|Destination_Address:")
@@ -160,4 +162,13 @@ public class SMPPReqTO {
 	public void setMessagePayload(String messagePayload) {
 		this.messagePayload = messagePayload;
 	}
+
+	public SMPPRespTO getExpetedResponseTO() {
+		return expetedResponseTO;
+	}
+
+	public void setExpetedResponseTO(SMPPRespTO expetedResponseTO) {
+		this.expetedResponseTO = expetedResponseTO;
+	}
+
 }

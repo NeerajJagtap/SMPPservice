@@ -36,7 +36,7 @@ public class SmppDaoImpl extends HibernateSupportDAO implements SmppDao {
 			smpplogger.debug("In Dao : getById Exception : " + e.getMessage(), e);
 			e.printStackTrace();
 			throw new SMPPException(SMPPExceptionConstant.HIBERNATE_CONNECTION_EXCEPTION, e.getMessage());
-		}finally {
+		} finally {
 			session.close();
 		}
 		return smppData;
@@ -60,7 +60,7 @@ public class SmppDaoImpl extends HibernateSupportDAO implements SmppDao {
 			smpplogger.debug("In Dao : getByMsisdn Exception : " + e.getMessage(), e);
 			e.printStackTrace();
 			throw new SMPPException(SMPPExceptionConstant.HIBERNATE_CONNECTION_EXCEPTION, e.getMessage());
-		}finally {
+		} finally {
 			session.close();
 		}
 		return (SmppData) criteria.uniqueResult();
@@ -83,12 +83,17 @@ public class SmppDaoImpl extends HibernateSupportDAO implements SmppDao {
 				criteria.add(Restrictions.eq("messageId", smppData.getMessageId()).ignoreCase());
 				return (SmppData) criteria.uniqueResult();
 			}
+			if (smppData != null && smppData.getMsisdn() != null && smppData.getTransactionId() != null) {
+				criteria.add(Restrictions.eq("msisdn", smppData.getMsisdn()).ignoreCase());
+				criteria.add(Restrictions.eq("transactionId", smppData.getTransactionId()).ignoreCase());
+				return (SmppData) criteria.uniqueResult();
+			}
 			session.flush();
 		} catch (Exception e) {
 			smpplogger.debug("In Dao : getRecord Exception : " + e.getMessage(), e);
 			e.printStackTrace();
 			throw new SMPPException(SMPPExceptionConstant.HIBERNATE_CONNECTION_EXCEPTION, e.getMessage());
-		}finally {
+		} finally {
 			session.close();
 		}
 		return smppData;
@@ -110,7 +115,7 @@ public class SmppDaoImpl extends HibernateSupportDAO implements SmppDao {
 			smpplogger.debug("In Dao : getAllSmppData Exception : " + e.getMessage(), e);
 			e.printStackTrace();
 			throw new SMPPException(SMPPExceptionConstant.HIBERNATE_CONNECTION_EXCEPTION, e.getMessage());
-		}finally {
+		} finally {
 			session.close();
 		}
 		return smppList;
@@ -130,7 +135,7 @@ public class SmppDaoImpl extends HibernateSupportDAO implements SmppDao {
 			smpplogger.debug("In Dao : save Exception : " + e.getMessage(), e);
 			e.printStackTrace();
 			throw new SMPPException(SMPPExceptionConstant.HIBERNATE_CONNECTION_EXCEPTION, e.getMessage());
-		}finally {
+		} finally {
 			session.close();
 		}
 		return flag;
@@ -158,7 +163,7 @@ public class SmppDaoImpl extends HibernateSupportDAO implements SmppDao {
 			smpplogger.debug("In Dao : update Exception : " + e.getMessage(), e);
 			e.printStackTrace();
 			throw new SMPPException(SMPPExceptionConstant.HIBERNATE_CONNECTION_EXCEPTION, e.getMessage());
-		}finally {
+		} finally {
 			session.close();
 		}
 	}
@@ -177,7 +182,7 @@ public class SmppDaoImpl extends HibernateSupportDAO implements SmppDao {
 			smpplogger.debug("In Dao : delete Exception : " + e.getMessage(), e);
 			e.printStackTrace();
 			throw new SMPPException(SMPPExceptionConstant.HIBERNATE_CONNECTION_EXCEPTION, e.getMessage());
-		}finally {
+		} finally {
 			session.close();
 		}
 	}

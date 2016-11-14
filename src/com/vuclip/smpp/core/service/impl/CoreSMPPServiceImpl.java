@@ -54,8 +54,6 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 
 	private SMPPProperties smppProperties;
 
-	private SMPPReqTO smppReqTO;
-
 	private String msisdn = null;
 
 	private static final String MESSAGE_ID = "id:";
@@ -66,16 +64,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		this.smppProperties = smppProperties;
 	}
 
-	public SMPPReqTO getSmppReqTO() {
-		return smppReqTO;
-	}
-
-	public void setSmppReqTO(SMPPReqTO smppReqTO) {
-		this.smppReqTO = smppReqTO;
-		this.msisdn = smppReqTO.getDestAddress().getAddress();
-	}
-
-	public boolean bind() throws SMPPException {
+	private boolean bind() throws SMPPException {
 		try {
 			System.out.println("Bind Start");
 			if (smpplogger.isDebugEnabled()) {
@@ -139,7 +128,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		return request;
 	}
 
-	public SMPPRespTO submitSync() throws SMPPException {
+	private SMPPRespTO submitSync(SMPPReqTO smppReqTO) throws SMPPException {
 		System.out.println("Submit SM Start.");
 		SMPPRespTO smppRespTO = null;
 		if (smpplogger.isDebugEnabled()) {
@@ -151,7 +140,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			session = SMPPSession.getInstance(smppProperties.getSmppServerIP(),
 					Integer.parseInt(smppProperties.getSmppServerPort()));
 		// set values
-		setSubmitParameters(request);
+		setSubmitParameters(request, smppReqTO);
 		// send the request
 		try {
 			if (smpplogger.isDebugEnabled()) {
@@ -167,6 +156,11 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 							"In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM response " + response.debugString());
 				}
 				smppRespTO = new SMPPRespTO();
+				SMPPRespTO expectedRespTO = smppReqTO.getExpetedResponseTO();
+				smppRespTO.setDlrURL(expectedRespTO.getDlrURL());
+				smppRespTO.setMsisdn(expectedRespTO.getMsisdn());
+				smppRespTO.setPricePoint(expectedRespTO.getPricePoint());
+				smppRespTO.setTransId(expectedRespTO.getTransId());
 				smppRespTO.setRespStatus(response.getCommandStatus());
 				smppRespTO.setResponseId(response.getCommandId());
 				smppRespTO.setResponseMsgId(response.getMessageId());
@@ -189,7 +183,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		return smppRespTO;
 	}
 
-	private void setSubmitParameters(SubmitSM request) throws SMPPException {
+	private void setSubmitParameters(SubmitSM request, SMPPReqTO smppReqTO) throws SMPPException {
 		try {
 			// Set Request SpeceficParameters
 			request.setServiceType(smppReqTO.getServiceType());
@@ -226,7 +220,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		}
 	}
 
-	public boolean enquire() throws SMPPException {
+	private boolean enquire() throws SMPPException {
 		if (null == session) {
 			return false;
 		}
@@ -264,7 +258,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		}
 	}
 
-	public boolean unbind() throws SMPPException {
+	private boolean unbind() throws SMPPException {
 		if (!session.isBound()) {
 			return true;
 		}
@@ -299,23 +293,20 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		return session.isBound();
 	}
 
-	public DeliveryNotificationTO receiveListener() throws SMPPException {
+	private DeliveryNotificationTO receiveListener() throws SMPPException {
 		try {
 			if (!session.isBound()) {
 				this.bind();
 			}
 			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Receiver Started.");
+				smpplogger.debug("In CoreSMPPServiceImpl : Receiver Started.");
 			}
 
-			// With Data.RECEIVE_BLOCKING thread will block forever to
-			// receive
 			PDU pdu = null;
 
 			if (smpplogger.isDebugEnabled()) {
 				smpplogger.debug("In CoreSMPPServiceImpl : Going to receive a PDU. ");
 			}
-
 			if (smppProperties.isAsynchorized()) {
 				ServerPDUEvent pduEvent = eventListener.getRequestEvent(Data.RECEIVE_BLOCKING);
 				if (pduEvent != null) {
@@ -340,7 +331,6 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 						smpplogger.debug("In CoreSMPPServiceImpl : Going to send default response to request "
 								+ response.debugString());
 					}
-
 					session.respond(response);
 					dnto.setResponseToCarrier(response.debugString());
 				}
@@ -352,7 +342,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 				dnto.setMessageId(messageIDFromString);
 				dnto.setMO(null != messageIDFromString ? false : true);
 				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Receiver End Success.");
+					smpplogger.debug("In CoreSMPPServiceImpl : Receiver End Success.");
 				}
 				return dnto;
 			} else {
@@ -386,12 +376,23 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		}
 	}
 
-	public SMPPRespTO submitMessagePDU() throws SMPPException {
+	public SMPPRespTO submitMessagePDU(SMPPReqTO smppReqTO) throws SMPPException {
+		SMPPRespTO smppRespTO = null;
 		synchronized (mutex) {
+			this.msisdn = smppReqTO.getExpetedResponseTO().getMsisdn();
 			if (!enquire()) {
 				bind();
 			}
-			return submitSync();
+			smppRespTO = submitSync(smppReqTO);
 		}
+		return smppRespTO;
+	}
+
+	public DeliveryNotificationTO getDeliveryNotification() throws SMPPException {
+		DeliveryNotificationTO deliveryNotificationTO = null;
+		synchronized (mutex) {
+			deliveryNotificationTO = receiveListener();
+		}
+		return deliveryNotificationTO;
 	}
 }

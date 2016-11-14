@@ -99,7 +99,11 @@ public class SmppController {
 				smpplogger.debug("Error Configurations Setting. " + e.getMessage());
 			}
 		}
-
+		SMPPRespTO expectedSMPPRespTO = new SMPPRespTO();
+		expectedSMPPRespTO.setDlrURL(dlr_url);
+		expectedSMPPRespTO.setMsisdn(to);
+		expectedSMPPRespTO.setPricePoint(PRICEPOINT);
+		expectedSMPPRespTO.setTransId(transactionId);
 		// Sending SMS to SMPP - Start
 		SMPPReqTO smppReqTO = new SMPPReqTO();
 		try {
@@ -109,15 +113,15 @@ public class SmppController {
 			smpplogger.debug("Exception : " + e.getMessage());
 			e.printStackTrace();
 		}
-
 		smppReqTO.setMessagePayload(message_payload);
+		smppReqTO.setExpetedResponseTO(expectedSMPPRespTO);
 
 		// Send SMS
 		SMPPRespTO smppRespTO = sendSyncSMS(smppReqTO, coreSMPPHandler);
 
 		HttpStatus returnStatus = HttpStatus.GATEWAY_TIMEOUT;
 		// Insert Data in local DB
-		returnStatus = insertDataInDB(to, PRICEPOINT, transactionId, smppRespTO, returnStatus, dlr_url);
+		returnStatus = insertDataInDB(smppRespTO, returnStatus);
 
 		Date responseTime = new Date();
 		if (smpplogger.isDebugEnabled()) {
@@ -137,15 +141,14 @@ public class SmppController {
 		return new ResponseEntity(returnStatus);
 	}
 
-	private HttpStatus insertDataInDB(String to, String PRICEPOINT, String transactionId, SMPPRespTO smppRespTO,
-			HttpStatus returnStatus, String dlrURL) throws SMPPException {
+	private HttpStatus insertDataInDB(SMPPRespTO smppRespTO, HttpStatus returnStatus) throws SMPPException {
 		// Set data for DB
 		SmppData smppData = new SmppData();
-		smppData.setMsisdn(to);
-		smppData.setPricePoint(PRICEPOINT);
-		smppData.setTransactionId(transactionId);
+		smppData.setMsisdn(smppRespTO.getMsisdn());
+		smppData.setPricePoint(smppRespTO.getPricePoint());
+		smppData.setTransactionId(smppRespTO.getTransId());
 		smppData.setReqStatus("0");
-		smppData.setDlrURL(dlrURL);
+		smppData.setDlrURL(smppRespTO.getDlrURL());
 		if (null != smppRespTO && smppRespTO.getRespStatus() == 0) {
 			returnStatus = HttpStatus.ACCEPTED;
 			smppData.setMessageId(smppRespTO.getResponseMsgId());

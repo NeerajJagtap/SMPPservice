@@ -14,11 +14,24 @@ public class SMPPRespTO {
 
 	private String responseMsgId;
 
+	private String msisdn;
+
+	private String pricePoint;
+
 	public String debugString() {
-		return new StringBuilder("Response:[Transaction_Id:").append(transId).append("|DLR_Url:").append(dlrURL)
+		return new StringBuilder("Response:[Transaction_Id:").append(transId).append("|MSISDN:").append(msisdn)
+				.append("|PricePoint:").append(pricePoint).append("|DLR_Url:").append(dlrURL)
 				.append("|Response_Command_Status:").append(respStatus).append("|Response_Body:").append(resposeMessage)
 				.append("|Response_Command_Id:").append(responseId).append("|Response_Message_Id:")
 				.append(responseMsgId).append("]").toString();
+	}
+
+	public String getPricePoint() {
+		return pricePoint;
+	}
+
+	public void setPricePoint(String pricePoint) {
+		this.pricePoint = pricePoint;
 	}
 
 	public String getTransId() {
@@ -67,6 +80,14 @@ public class SMPPRespTO {
 
 	public void setResponseMsgId(String responseMsgId) {
 		this.responseMsgId = responseMsgId;
+	}
+
+	public String getMsisdn() {
+		return msisdn;
+	}
+
+	public void setMsisdn(String msisdn) {
+		this.msisdn = msisdn;
 	}
 
 }
