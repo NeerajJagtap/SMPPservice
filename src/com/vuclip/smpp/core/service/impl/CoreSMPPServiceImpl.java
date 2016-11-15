@@ -87,7 +87,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 				response = session.bind(request);
 			}
 			if (SMPPLOGGER.isDebugEnabled()) {
-				SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind response " + response.debugString());
+				SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind response "
+						+ (null != response ? response.debugString() : "NULL"));
 			}
 		} catch (PDUException e) {
 			throw new SMPPException(SMPPExceptionConstant.BIND_PDU_EXCEPTION, e.getMessage());
@@ -128,9 +129,8 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		return request;
 	}
 
-	private SMPPRespTO submitSync(SMPPReqTO smppReqTO) throws SMPPException {
+	private void submitSync(SMPPReqTO smppReqTO, SMPPRespTO smppRespTO) throws SMPPException {
 		System.out.println("Submit SM Start.");
-		SMPPRespTO smppRespTO = null;
 		if (SMPPLOGGER.isDebugEnabled()) {
 			SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit SM Start.");
 		}
@@ -152,18 +152,14 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			} else {
 				response = session.submit(request);
 				if (SMPPLOGGER.isDebugEnabled()) {
-					SMPPLOGGER.debug(
-							"In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM response " + response.debugString());
+					SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit_SM response "
+							+ (null != response ? response.debugString() : "NULL"));
 				}
-				smppRespTO = new SMPPRespTO();
-				SMPPRespTO expectedRespTO = smppReqTO.getExpetedResponseTO();
-				smppRespTO.setDlrURL(expectedRespTO.getDlrURL());
-				smppRespTO.setMsisdn(expectedRespTO.getMsisdn());
-				smppRespTO.setPricePoint(expectedRespTO.getPricePoint());
-				smppRespTO.setTransId(expectedRespTO.getTransId());
-				smppRespTO.setRespStatus(response.getCommandStatus());
-				smppRespTO.setResponseId(response.getCommandId());
-				smppRespTO.setResponseMsgId(response.getMessageId());
+				if (null != response) {
+					smppRespTO.setRespStatus(response.getCommandStatus());
+					smppRespTO.setResponseId(response.getCommandId());
+					smppRespTO.setResponseMsgId(response.getMessageId());
+				}
 			}
 		} catch (PDUException e) {
 			throw new SMPPException(SMPPExceptionConstant.SUBMIT_SM_PDU_EXCEPTION, e.getMessage());
@@ -180,7 +176,6 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		if (SMPPLOGGER.isDebugEnabled()) {
 			SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Submit SM End.");
 		}
-		return smppRespTO;
 	}
 
 	private void setSubmitParameters(SubmitSM request, SMPPReqTO smppReqTO) throws SMPPException {
@@ -383,7 +378,15 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			if (!enquire()) {
 				bind();
 			}
-			smppRespTO = submitSync(smppReqTO);
+			smppRespTO = new SMPPRespTO();
+			SMPPRespTO expectedRespTO = smppReqTO.getExpetedResponseTO();
+			smppRespTO.setDlrURL(expectedRespTO.getDlrURL());
+			smppRespTO.setMsisdn(expectedRespTO.getMsisdn());
+			smppRespTO.setPricePoint(expectedRespTO.getPricePoint());
+			smppRespTO.setTransId(expectedRespTO.getTransId());
+			if (session.isBound()) {
+				submitSync(smppReqTO, smppRespTO);
+			}
 		}
 		return smppRespTO;
 	}
