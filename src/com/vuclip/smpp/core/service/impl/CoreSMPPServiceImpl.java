@@ -196,9 +196,14 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			request.setSmDefaultMsgId(smppReqTO.getSmDefaultMsgId());
 			request.setSequenceNumber(1);
 			request.assignSequenceNumber(true);
+
+			Integer pricePoint = Integer.parseInt(smppReqTO.getExpetedResponseTO().getPricePoint());
+			Map<Integer, Integer> optionalParamMap = smppProperties.getOptionalParamMap();
+			if (null != pricePoint) {
+				optionalParamMap.put(Integer.valueOf(smppProperties.getOptionalParam1Tag(), 16), pricePoint);
+			}
 			// Set Config Specific Parameters
-			Iterator<Map.Entry<Integer, Integer>> optionalParamMapIterator = smppProperties.getOptionalParamMap()
-					.entrySet().iterator();
+			Iterator<Map.Entry<Integer, Integer>> optionalParamMapIterator = optionalParamMap.entrySet().iterator();
 			while (optionalParamMapIterator.hasNext()) {
 				Map.Entry<Integer, Integer> entry = optionalParamMapIterator.next();
 				request.setExtraOptional((short) entry.getKey().intValue(),
