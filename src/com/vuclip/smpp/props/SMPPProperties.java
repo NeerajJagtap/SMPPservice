@@ -25,6 +25,8 @@ public final class SMPPProperties {
 	private final String optionalParam2Tag;
 	private final String optionalParam3Tag;
 
+	private final String talendMOURL;
+
 	private Map<Integer, Integer> optionalParamMap;
 
 	private static final String SYNC = "sync";
@@ -39,7 +41,7 @@ public final class SMPPProperties {
 			@Value("${opt_param1}") String optionalParam1, @Value("${opt_param2}") String optionalParam2,
 			@Value("${opt_param3}") String optionalParam3, @Value("${opt_param1_tag}") String optionalParam1Tag,
 			@Value("${opt_param2_tag}") String optionalParam2Tag, @Value("${opt_param3_tag}") String optionalParam3Tag,
-			@Value("${system_type}") String systemType) {
+			@Value("${system_type}") String systemType, @Value("${talend_mo_url}") String talendMOURL) {
 
 		this.smppServerIP = smppServerIP;
 		this.smppServerPort = smppServerPort;
@@ -55,6 +57,7 @@ public final class SMPPProperties {
 		this.optionalParam1Tag = optionalParam1Tag;
 		this.optionalParam2Tag = optionalParam2Tag;
 		this.optionalParam3Tag = optionalParam3Tag;
+		this.talendMOURL = talendMOURL;
 
 		optionalParamMap = new HashMap<Integer, Integer>();
 		optionalParamMap.put(Integer.valueOf(optionalParam1Tag, 16), Integer.valueOf(optionalParam1));
@@ -130,6 +133,10 @@ public final class SMPPProperties {
 
 	public boolean isAsynchorized() {
 		return isAsynchorized;
+	}
+
+	public String getTalendMOURL() {
+		return talendMOURL;
 	}
 
 }

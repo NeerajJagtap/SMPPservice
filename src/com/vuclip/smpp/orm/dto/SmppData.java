@@ -219,10 +219,12 @@ public class SmppData {
 
 	@Override
 	public String toString() {
-		return "SmppData [id=" + id + ", msisdn=" + msisdn + ", transactionId=" + transactionId + ", messageId="
-				+ messageId + ", pricePoint=" + pricePoint + ", createdDate=" + createdDate + ", modifiedDate="
-				+ modifiedDate + ", DN Message=" + dnMessage + ", dlrURL=" + dlrURL + ", Talend Response="
-				+ talendResponse + "]";
+		return new StringBuilder("SmppData [id=").append(id).append(", msisdn=").append(msisdn)
+				.append(", transactionId=").append(transactionId).append(", messageId=").append(messageId)
+				.append(", pricePoint=").append(pricePoint).append(", createdDate=").append(createdDate)
+				.append(", modifiedDate=").append(modifiedDate).append(", DN Message=").append(dnMessage)
+				.append(", dlrURL=").append(dlrURL).append(", Talend Response=").append(talendResponse).append("]")
+				.toString();
 	}
 
 }

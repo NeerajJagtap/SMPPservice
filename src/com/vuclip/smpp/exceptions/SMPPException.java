@@ -19,7 +19,11 @@ public class SMPPException extends Exception {
 
 	private static Properties properties;
 
-	private String exceptionId;
+	private String exceptionId = null;
+
+	public String getExceptionId() {
+		return exceptionId;
+	}
 
 	public SMPPException(String exceptionId, String message) {
 		super(message);
@@ -32,15 +36,15 @@ public class SMPPException extends Exception {
 				properties = ExceptionPropertiesLoader.getPropertyInstance();
 			} catch (SMPPException e) {
 				if (smpplogger.isDebugEnabled()) {
-					smpplogger.debug("In SMPPException :"+e.getMessage());
+					smpplogger.debug("In SMPPException :" + e.getMessage());
 				}
 			}
 			StringBuilder message = new StringBuilder(EXCEPTION).append(properties.getProperty(exceptionId))
 					.append(COLON).append(super.getMessage());
-			System.out.println(message.toString());
 			return message.toString();
 		} else {
-			return this.exceptionId + " Error while reading property file. [" + super.getMessage() + "]";
+			return new StringBuilder(this.exceptionId).append(" Error while reading property file. [")
+					.append(super.getMessage()).append("]").toString();
 		}
 
 	}
