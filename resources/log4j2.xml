@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration monitorInterval="30" status="debug">
+<Configuration status="WARN">
+
+	<Properties>
+		<Property name="log-path">logs/debuglogs</Property>
+	</Properties>
 
 	<Appenders>
 		<Console name="appender-Console-all" target="SYSTEM_OUT">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" /> -->
+			<PatternLayout	pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n" />
 		</Console>
 
-		<File name="appender-smpp-debug" fileName="${sys:catalina.home}/logs/debuglogs/smpp.log"
-			append="true">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+		<RollingFile name="appender-smpp-debug" 
+		fileName="${sys:catalina.home}/${log-path}/smpp.log"
+		filePattern="${sys:catalina.home}/${log-path}/smpp.log.%d{yyyy-MM-dd-HH}.gz"	
+		append="true">
+			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" /> -->
+			<PatternLayout>
+				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
+				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t] -%m%n}{STYLE=Logback}</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<!-- <SizeBasedTriggeringPolicy size="1 kB" /> -->
+			</Policies>
+			<DefaultRolloverStrategy max="100" />
 			<Filters>
 				<ThresholdFilter level="error" onMatch="DENY"
 					onMismatch="NEUTRAL" />
@@ -21,11 +37,22 @@
 				<ThresholdFilter level="debug" onMatch="ACCEPT"
 					onMismatch="DENY" />
 			</Filters>
-		</File>
+		</RollingFile>
 
-		<File name="appender-sendsms-info" fileName="${sys:catalina.home}/logs/debuglogs/smpp_sendsms.log"
-			append="true">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+		<RollingFile name="appender-sendsms-info" 
+		 fileName="${sys:catalina.home}/${log-path}/smpp_sendsms.log"
+		 filePattern="${sys:catalina.home}/${log-path}/smpp_sendsms.log.%d{yyyy-MM-dd-HH}.gz"	
+		 append="true">
+			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" /> -->
+			<PatternLayout>
+				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
+				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t] -%m%n}{STYLE=Logback}</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<!-- <SizeBasedTriggeringPolicy size="1 kB" /> -->
+			</Policies>
+			<DefaultRolloverStrategy max="100" />
 			<Filters>
 				<ThresholdFilter level="warn" onMatch="DENY"
 					onMismatch="NEUTRAL" />
@@ -38,11 +65,22 @@
 				<ThresholdFilter level="debug" onMatch="DENY"
 					onMismatch="NEUTRAL" />
 			</Filters>
-		</File>
+		</RollingFile>
 
-		<File name="appender-dn-info" fileName="${sys:catalina.home}/logs/debuglogs/smpp_dn.log"
+		<RollingFile name="appender-dn-info" 
+		fileName="${sys:catalina.home}/${log-path}/smpp_dn.log"
+		filePattern="${sys:catalina.home}/${log-path}/smpp_dn.log.%d{yyyy-MM-dd-HH}.gz"
 			append="true">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" /> -->
+			<PatternLayout>
+				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
+				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t] -%m%n}{STYLE=Logback}</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<!-- <SizeBasedTriggeringPolicy size="1 kB" /> -->
+			</Policies>
+			<DefaultRolloverStrategy max="100" />
 			<Filters>
 				<ThresholdFilter level="warn" onMatch="DENY"
 					onMismatch="NEUTRAL" />
@@ -55,26 +93,28 @@
 				<ThresholdFilter level="debug" onMatch="DENY"
 					onMismatch="NEUTRAL" />
 			</Filters>
-		</File>
+		</RollingFile>
 	</Appenders>
 
 
 	<Loggers>
-		<Root level="DEBUG">
-			<AppenderRef ref="appender-Console-all" />
-		</Root>
-
-		<Logger name="smpplogger" additivity="false" level="DEBUG">
+			<AsyncLogger name="smpplogger" additivity="false" level="DEBUG">
 			<!-- <AppenderRef ref="appender-smpp-debug" level="ALL" /> -->
 			<AppenderRef ref="appender-smpp-debug" level="DEBUG" />
-		</Logger>
+		</AsyncLogger>
 
-		<Logger name="sendsmslogger" additivity="false" level="INFO">
-			<AppenderRef ref="appender-sendsms-info" level="INFO" />
-		</Logger>
+			<AsyncLogger name="sendsmslogger" additivity="false" level="INFO">
+				<AppenderRef ref="appender-sendsms-info" level="INFO" />
+			</AsyncLogger>
 
-		<Logger name="dnlogger" additivity="false" level="INFO">
-			<AppenderRef ref="appender-dn-info" level="INFO" />
-		</Logger>
+			<AsyncLogger name="dnlogger" additivity="false" level="INFO">
+				<AppenderRef ref="appender-dn-info" level="INFO" />
+			</AsyncLogger>
+	<AsyncRoot level="WARN"  includeLocation="true" additivity="false">
+			<AppenderRef ref="appender-smpp-debug" />
+			<AppenderRef ref="appender-sendsms-info" />
+			<AppenderRef ref="appender-dn-info" />
+			<AppenderRef ref="appender-Console-all" />
+		</AsyncRoot>
 	</Loggers>
 </Configuration>
