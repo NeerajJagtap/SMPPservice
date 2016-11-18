@@ -3,7 +3,12 @@ package com.vuclip.smpp.util;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class SmppUtil {
+
+	private static final Logger SMPPLOGGER = LogManager.getLogger("smpplogger");
 
 	public static HashMap<String, String> getData(String decodedmsgdata) {
 
@@ -40,7 +45,7 @@ public class SmppUtil {
 
 		return map;
 	}
-	
+
 	public static String getTransactionIDForURL(String dlr_url) {
 		String transactionId = null;
 
@@ -58,7 +63,15 @@ public class SmppUtil {
 		try {
 			decodedString = java.net.URLDecoder.decode(input, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("Error in Util decodeToUtf8 : " + e.getMessage());
+			}
+			return input;
+		} catch (Exception e) {
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("Error in Util decodeToUtf8 : " + e.getMessage());
+			}
+			return input;
 		}
 		return decodedString;
 	}
@@ -68,7 +81,15 @@ public class SmppUtil {
 		try {
 			encodedString = java.net.URLEncoder.encode(input, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("Error in Util encodeToUtf8 : " + e.getMessage());
+			}
+			return input;
+		} catch (Exception e) {
+			if (SMPPLOGGER.isDebugEnabled()) {
+				SMPPLOGGER.debug("Error in Util decodeToUtf8 : " + e.getMessage());
+			}
+			return input;
 		}
 		return encodedString;
 	}

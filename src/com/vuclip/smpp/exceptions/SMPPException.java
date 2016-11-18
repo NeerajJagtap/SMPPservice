@@ -21,6 +21,10 @@ public class SMPPException extends Exception {
 
 	private String exceptionId = null;
 
+	public String getExceptionId() {
+		return exceptionId;
+	}
+
 	public SMPPException(String exceptionId, String message) {
 		super(message);
 		this.exceptionId = exceptionId;

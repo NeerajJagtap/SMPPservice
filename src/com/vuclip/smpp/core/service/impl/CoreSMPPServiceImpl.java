@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.smpp.Data;
 import org.smpp.NotSynchronousException;
 import org.smpp.ServerPDUEvent;
-import org.smpp.Session;
 import org.smpp.TimeoutException;
 import org.smpp.WrongSessionStateException;
 import org.smpp.pdu.BindReceiver;
@@ -48,7 +47,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 
 	private static final Logger SMPPLOGGER = LogManager.getLogger("smpplogger");
 
-	private volatile Session session = null;
+	private volatile SMPPSession session = null;
 
 	private static SMPPPDUEventListener eventListener = null;
 
@@ -66,6 +65,9 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 
 	private boolean bind() throws SMPPException {
 		try {
+			if (session != null && session.isBound()) {
+				return true;
+			}
 			System.out.println("Bind Start");
 			if (SMPPLOGGER.isDebugEnabled()) {
 				SMPPLOGGER.debug("In CoreSMPPServiceImpl : [" + msisdn + "] Bind request Start.");
@@ -254,6 +256,19 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		} catch (WrongSessionStateException e) {
 			throw new SMPPException(SMPPExceptionConstant.ENQUIRE_WRONG_SESSION_STATE_EXCEPTION, e.getMessage());
 		} catch (IOException e) {
+			try {
+				session.close();
+			} catch (WrongSessionStateException exe) {
+				if (SMPPLOGGER.isDebugEnabled()) {
+					SMPPLOGGER.debug("In CoreSMPPServiceImpl Session Close Error : " + exe.getMessage());
+				}
+				exe.printStackTrace();
+			} catch (IOException exe) {
+				if (SMPPLOGGER.isDebugEnabled()) {
+					SMPPLOGGER.debug("In CoreSMPPServiceImpl Session Close Error : " + exe.getMessage());
+				}
+				exe.printStackTrace();
+			}
 			throw new SMPPException(SMPPExceptionConstant.ENQUIRE_IO_EXCEPTION, e.getMessage());
 		}
 	}
@@ -275,6 +290,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 			 **/
 			UnbindResp response = null;
 			response = session.unbind();
+			session.close();
 			if (SMPPLOGGER.isDebugEnabled()) {
 				SMPPLOGGER.debug("In CoreSMPPServiceImpl : " + Thread.currentThread().getName() + "[" + msisdn
 						+ "] : Unbind response " + (null != response ? response.debugString() : "is null"));
@@ -380,7 +396,22 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 		SMPPRespTO smppRespTO = null;
 		synchronized (mutex) {
 			this.msisdn = smppReqTO.getExpetedResponseTO().getMsisdn();
-			if (!enquire()) {
+
+			boolean enquire = false;
+			try {
+				enquire = enquire();
+			} catch (SMPPException exception) {
+				session = null;
+				SMPPSession.flushSession();
+				if (SMPPExceptionConstant.ENQUIRE_PDU_EXCEPTION.equals(exception.getExceptionId())) {
+					throw exception;
+				}
+				if (SMPPLOGGER.isDebugEnabled()) {
+					SMPPLOGGER.debug("SMPP Exception : " + exception.getMessage());
+				}
+				bind();
+			}
+			if (!enquire) {
 				bind();
 			}
 			smppRespTO = new SMPPRespTO();

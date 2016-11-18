@@ -6,10 +6,10 @@ import org.smpp.TCPIPConnection;
 public class SMPPSession extends Session {
 
 	private static SMPPSession session;
-	
-	private static Object mutex= new Object();
 
-	private static final Long TIME_OUT = (long) (20 * 1000);
+	private static Object mutex = new Object();
+
+	private static final Long TIME_OUT = (long) (10 * 1000);
 
 	private SMPPSession(TCPIPConnection connection) {
 		super(connection);
@@ -17,15 +17,17 @@ public class SMPPSession extends Session {
 
 	public static SMPPSession getInstance(String ipAddress, int port) {
 		if (null == session) {
-			synchronized (mutex) {
 				if (null == session) {
 					TCPIPConnection connection = new TCPIPConnection(ipAddress, port);
 					connection.setReceiveTimeout(TIME_OUT);
 					session = new SMPPSession(connection);
 				}
-			}
 		}
 		return session;
+	}
+
+	public static void flushSession() {
+		session = null;
 	}
 
 }

@@ -70,6 +70,13 @@ public class CoreSMPPHandler {
 			public void run() {
 				while (true) {
 					isReceiverActive = true;
+					try {
+						System.out.println("Sleep:100 Mili");
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+						SMPPLOGGER.debug("In CoreSMPPHandler:DN Listener Exception Wait : " + e.getMessage());
+					}
 					DeliveryNotificationTO dnto = listener();
 					responseReceivedTime = new Date();
 					if (null != dnto && Data.ESME_ROK == dnto.getDeliveryStatus()) {
