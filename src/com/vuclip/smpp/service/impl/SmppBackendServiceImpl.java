@@ -1,0 +1,42 @@
+package com.vuclip.smpp.service.impl;
+
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.vuclip.smpp.exceptions.SMPPException;
+import com.vuclip.smpp.orm.dao.SmppBackendDao;
+import com.vuclip.smpp.orm.dto.SmppData;
+import com.vuclip.smpp.service.SmppBackendService;
+
+@Service
+@Transactional
+public class SmppBackendServiceImpl implements SmppBackendService {
+
+	@Autowired
+	private SmppBackendDao smppBackendDao;
+
+	Logger smpplogger = LogManager.getLogger("smpplogger");
+
+	@Override
+	public void purgeSmppDB() throws SMPPException {
+		if (smpplogger.isDebugEnabled()) {
+			smpplogger.debug("In SmppDBCleanServiceImpl : purgeSmppDB() ");
+		}
+		smppBackendDao.purgeSmppDB();
+	}
+	
+	@Override
+	public List<SmppData> getRetryToTalendList() throws SMPPException {
+		if (smpplogger.isDebugEnabled()) {
+			smpplogger.debug("In SmppDBCleanServiceImpl : getRetryToTalendList() ");
+		}
+		return smppBackendDao.getRetryToTalendList();
+	}
+
+}
