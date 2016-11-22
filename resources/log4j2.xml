@@ -114,10 +114,12 @@
 			append="true">
 			<PatternLayout>
 				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]-%m%n}{STYLE=Logback}</Pattern>
+				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] -
+					[%t]-%m%n}{STYLE=Logback}</Pattern>
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
 			</Policies>
 			<DefaultRolloverStrategy max="100" />
 			<Filters>
@@ -140,10 +142,12 @@
 			append="true">
 			<PatternLayout>
 				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]-%m%n}{STYLE=Logback}</Pattern>
+				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] -
+					[%t]-%m%n}{STYLE=Logback}</Pattern>
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
 			</Policies>
 			<DefaultRolloverStrategy max="100" />
 			<Filters>
@@ -166,10 +170,12 @@
 			append="true">
 			<PatternLayout>
 				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]-%m%n}{STYLE=Logback}</Pattern>
+				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] -
+					[%t]-%m%n}{STYLE=Logback}</Pattern>
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
 			</Policies>
 			<DefaultRolloverStrategy max="100" />
 			<Filters>
@@ -192,10 +198,12 @@
 			append="true">
 			<PatternLayout>
 				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]-%m%n}{STYLE=Logback}</Pattern>
+				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] -
+					[%t]-%m%n}{STYLE=Logback}</Pattern>
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
 			</Policies>
 			<DefaultRolloverStrategy max="100" />
 			<Filters>
@@ -211,7 +219,6 @@
 					onMismatch="NEUTRAL" />
 			</Filters>
 		</RollingFile>
-
 	</Appenders>
 
 	<Loggers>
@@ -239,7 +246,7 @@
 			<AppenderRef ref="appender-smpp-db-status" level="INFO" />
 		</AsyncLogger>
 
-		<AsyncLogger name="smpptTalendRetrail" additivity="false"
+		<AsyncLogger name="smppTalendRetrail" additivity="false"
 			level="DEBUG">
 			<AppenderRef ref="appender-smpp-talend-retrail" level="DEBUG" />
 		</AsyncLogger>

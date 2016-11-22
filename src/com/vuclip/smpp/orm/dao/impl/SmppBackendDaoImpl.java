@@ -5,10 +5,8 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +20,15 @@ import com.vuclip.smpp.util.HibernateSupportDAO;
 @Transactional
 public class SmppBackendDaoImpl extends HibernateSupportDAO implements SmppBackendDao {
 
-	private static final Logger smpplogger = LogManager.getLogger("smppDBCleanerLogger");
+	private static final Logger SMPPDBCLEANERLOGGER = LogManager.getLogger("smppDBCleanerLogger");
 
-	private static final Logger smppCurrentBDStatus = LogManager.getLogger("smppDBCurrentStatus");
+	private static final Logger SMPPTALENDRETRAIL = LogManager.getLogger("smppTalendRetrail");
+
+	private static final Logger SMPPCURRENTBDSTATUS = LogManager.getLogger("smppDBCurrentStatus");
 
 	public void purgeSmppDB() {
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("SMPPDBCleaner Started");
+		if (SMPPDBCLEANERLOGGER.isDebugEnabled()) {
+			SMPPDBCLEANERLOGGER.debug("SMPPDBCleaner Started");
 		}
 		Session session = null;
 		Query query = null;
@@ -38,36 +38,36 @@ public class SmppBackendDaoImpl extends HibernateSupportDAO implements SmppBacke
 		String responseOKRequestsInLast2HoursHQL = "Select count(*) from smpp_data where resp_status = '202' and modified_date >= (current_timestamp() - interval 2 hour)";
 		String talendRespFailHQL = "Select count(*) from smpp_data where talend_response <> '200' and resp_status = '202' and modified_date >= (current_timestamp() - interval 2 hour)";
 		try {
-
 			session = getSession();
 			session.beginTransaction();
 
-			generateInfoLogs(session, requestsInLast2HoursHQL, failRequestsOverLast2hours, responseOKRequestsInLast2HoursHQL, talendRespFailHQL);
-			
+			generateInfoLogs(session, requestsInLast2HoursHQL, failRequestsOverLast2hours,
+					responseOKRequestsInLast2HoursHQL, talendRespFailHQL);
+
 			// Delete Records before currentTime - 2hours
 			query = session.createSQLQuery(deleteRecsHQL);
 			int result = query.executeUpdate();
 			session.getTransaction().commit();
-			
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("SMPPDBCleaner End with no of rows deleted : " + result);
+
+			if (SMPPDBCLEANERLOGGER.isDebugEnabled()) {
+				SMPPDBCLEANERLOGGER.debug("SMPPDBCleaner End with no of rows deleted : " + result);
 			}
 		} catch (Exception e) {
 			String message = e.getMessage();
-			if (smpplogger.isDebugEnabled()) {
-				smpplogger.debug("SMPPDBCleaner End with Exception : " + message);
+			if (SMPPDBCLEANERLOGGER.isDebugEnabled()) {
+				SMPPDBCLEANERLOGGER.debug("SMPPDBCleaner End with Exception : " + message);
 			}
-			if (smppCurrentBDStatus.isInfoEnabled()) {
-				smppCurrentBDStatus.info("Exception while reading " + message);
+			if (SMPPCURRENTBDSTATUS.isInfoEnabled()) {
+				SMPPCURRENTBDSTATUS.info("Exception while reading " + message);
 			}
 		} finally {
-				session.flush();
-				session.close();
+			session.flush();
+			session.close();
 		}
 	}
 
-	public void generateInfoLogs(Session session, String requestsInLast2HoursHQL, String failRequestsOverLast2hours, String responseOKRequestsInLast2HoursHQL,
-			String talendRespFailHQL) throws Exception {
+	public void generateInfoLogs(Session session, String requestsInLast2HoursHQL, String failRequestsOverLast2hours,
+			String responseOKRequestsInLast2HoursHQL, String talendRespFailHQL) throws Exception {
 		Query query;
 		// Log Request made in last 2 hours
 		query = session.createSQLQuery(requestsInLast2HoursHQL);
@@ -81,13 +81,14 @@ public class SmppBackendDaoImpl extends HibernateSupportDAO implements SmppBacke
 		// requests failed to talend in last 2 hours
 		query = session.createSQLQuery(talendRespFailHQL);
 		BigInteger talendNotReached = (BigInteger) query.uniqueResult();
-		if (smppCurrentBDStatus.isInfoEnabled()) {
-			smppCurrentBDStatus.info("==================== DB status in last 2 hours ==================");
-			smppCurrentBDStatus.info("Requests Made : " + requestsMade);
-			smppCurrentBDStatus.info("Failed from carrier : " + failRequestsToCarrier);
-			smppCurrentBDStatus.info("Successful from Carrier : " + successReqs);
-			smppCurrentBDStatus.info("Talend response not OK : " + talendNotReached);
-			smppCurrentBDStatus.info("Success Requests : " + (requestsMade.longValue() - (failRequestsToCarrier.longValue() + talendNotReached.longValue())));
+		if (SMPPCURRENTBDSTATUS.isInfoEnabled()) {
+			SMPPCURRENTBDSTATUS.info("==================== DB status in last 2 hours ==================");
+			SMPPCURRENTBDSTATUS.info("Requests Made : " + requestsMade);
+			SMPPCURRENTBDSTATUS.info("Failed from carrier : " + failRequestsToCarrier);
+			SMPPCURRENTBDSTATUS.info("Successful from Carrier : " + successReqs);
+			SMPPCURRENTBDSTATUS.info("Talend response not OK : " + talendNotReached);
+			SMPPCURRENTBDSTATUS.info("Success Requests : "
+					+ (requestsMade.longValue() - (failRequestsToCarrier.longValue() + talendNotReached.longValue())));
 		}
 	}
 
@@ -96,21 +97,19 @@ public class SmppBackendDaoImpl extends HibernateSupportDAO implements SmppBacke
 	public List<SmppData> getRetryToTalendList() throws SMPPException {
 		List<SmppData> smppList = null;
 		Session session = getSession();
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("In SmppBackendDaoImpl : getRetryToTalendList");
+		if (SMPPTALENDRETRAIL.isDebugEnabled()) {
+			SMPPTALENDRETRAIL.debug("In SmppBackendDaoImpl : getRetryToTalendList");
 		}
-
 		Query query = null;
 		String selectHQL = "Select s from SmppData s where s.talendResponse <> '200' and s.respStatus = '202' and reties < 5 and (dnMessage <> '' or dnMessage is not null)";
-		
-		try {
 
+		try {
 			// get Recs with in time (currentTime - 2hours)
 			query = session.createQuery(selectHQL);
 			smppList = query.list();
-			
+
 		} catch (Exception e) {
-			smpplogger.debug("In SmppBackendDaoImpl : getRetryToTalendList Exception : " + e.getMessage(), e);
+			SMPPTALENDRETRAIL.debug("In SmppBackendDaoImpl : getRetryToTalendList Exception : " + e.getMessage(), e);
 			e.printStackTrace();
 			throw new SMPPException(SMPPExceptionConstant.HIBERNATE_CONNECTION_EXCEPTION, e.getMessage());
 		} finally {

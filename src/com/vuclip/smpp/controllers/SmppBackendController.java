@@ -25,11 +25,14 @@ import com.vuclip.smpp.service.SmppService;
 import com.vuclip.smpp.util.RetryLoggingBean;
 import com.vuclip.smpp.util.SmppUtil;
 
-
 @Controller
 public class SmppBackendController {
 
-	private static final Logger SMPPLOGGER = LogManager.getLogger("smpplogger");
+	private static final Logger SMPPDBCLEANERLOGGER = LogManager.getLogger("smppDBCleanerLogger");
+
+	private static final Logger SMPPTALENDRETRAIL = LogManager.getLogger("smppTalendRetrail");
+
+	private static final Logger SMPPTALENDRETRAILREC = LogManager.getLogger("smppTalendRetrailRec");
 
 	@Autowired
 	private SmppBackendService smppBackendService;
@@ -40,9 +43,10 @@ public class SmppBackendController {
 	@RequestMapping(value = "/purgeSmppDB", method = RequestMethod.GET)
 	public ResponseEntity<?> purgeSmppDB(HttpServletRequest request, HttpServletResponse response) {
 		HttpStatus returnStatus = HttpStatus.GATEWAY_TIMEOUT;
-		if (SMPPLOGGER.isDebugEnabled()) {
-			SMPPLOGGER.debug("In SmppDBCleanController: /purgeSmppDB processing Start for Request : "
-					+ new StringBuilder(request.getRequestURL()).append("?").append(request.getQueryString()).toString());
+		if (SMPPDBCLEANERLOGGER.isDebugEnabled()) {
+			SMPPDBCLEANERLOGGER.debug("In SmppDBCleanController: /purgeSmppDB processing Start for Request : "
+					+ new StringBuilder(request.getRequestURL()).append("?").append(request.getQueryString())
+							.toString());
 		}
 		// Purge the DB
 		try {
@@ -50,8 +54,8 @@ public class SmppBackendController {
 			smppBackendService.purgeSmppDB();
 			returnStatus = HttpStatus.ACCEPTED;
 		} catch (SMPPException e) {
-			if (SMPPLOGGER.isDebugEnabled()) {
-				SMPPLOGGER.debug("SMPP Exception : " + e.getMessage());
+			if (SMPPDBCLEANERLOGGER.isDebugEnabled()) {
+				SMPPDBCLEANERLOGGER.debug("SMPP Exception : " + e.getMessage());
 			}
 		}
 
@@ -62,61 +66,61 @@ public class SmppBackendController {
 	@RequestMapping(value = "/retryToTalend", method = RequestMethod.GET)
 	public ResponseEntity<?> retryToTalend(HttpServletRequest request, HttpServletResponse response) {
 		HttpStatus returnStatus = HttpStatus.GATEWAY_TIMEOUT;
-		if (SMPPLOGGER.isDebugEnabled()) {
-			SMPPLOGGER.debug("In SmppRetryToTalendController: /retryToTalend processing Start for Request : "
-					+ new StringBuilder(request.getRequestURL()).append("?").append(request.getQueryString()).toString());
+		if (SMPPTALENDRETRAIL.isDebugEnabled()) {
+			SMPPTALENDRETRAIL.debug("In SmppRetryToTalendController: /retryToTalend processing Start for Request : "
+					+ new StringBuilder(request.getRequestURL()).append("?").append(request.getQueryString())
+							.toString());
 		}
 
 		// retry To Talend
 		try {
 			List<SmppData> retryToTalendList = smppBackendService.getRetryToTalendList();
-			if (retryToTalendList != null) {
-				
-				if (SMPPLOGGER.isInfoEnabled()) {
-					SMPPLOGGER.info(" RetryToTalend List Size : " + retryToTalendList.size());
+			if (retryToTalendList != null && retryToTalendList.size() > 0) {
+
+				if (SMPPTALENDRETRAIL.isInfoEnabled()) {
+					SMPPTALENDRETRAIL.info(" RetryToTalend List Size : " + retryToTalendList.size());
 				}
-				
+
 				for (SmppData smppData : retryToTalendList) {
 					// Split URL to encode separately
 					String splitURL[] = smppData.getDlrURL().split("smscid");
 
 					// Call REST service of talend
-					String urlString = splitURL[0].replace("%p", smppData.getMsisdn()).replace("%a", SmppUtil.encodeToUtf8(smppData.getDnMessage()))
+					String urlString = splitURL[0].replace("%p", smppData.getMsisdn()).replace("%a",
+							SmppUtil.encodeToUtf8(smppData.getDnMessage()))
 							+ SmppUtil.encodeToUtf8("smscid" + splitURL[1]);
 					URL url = new URL(urlString);
 					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 					conn.setRequestMethod("GET");
 					conn.setRequestProperty("Accept", "application/json");
 					int responseCode = conn.getResponseCode();
-					
+
 					// Update number of retries
 					smppData.setTalendResponse(Integer.valueOf(responseCode).toString());
 					smppData.setReties(smppData.getReties() + 1);
 					smppService.update(smppData);
-					if (SMPPLOGGER.isInfoEnabled()) {
-						SMPPLOGGER.info(new RetryLoggingBean(new Date(), smppData).getLogFormat());
+					if (SMPPTALENDRETRAILREC.isInfoEnabled()) {
+						SMPPTALENDRETRAILREC.info(new RetryLoggingBean(new Date(), smppData).getLogFormat());
 					}
 				}
 			}
 
 			returnStatus = HttpStatus.ACCEPTED;
 		} catch (IOException e) {
-			if (SMPPLOGGER.isDebugEnabled()) {
-				SMPPLOGGER.debug("SMPP IOException : " + e.getMessage());
-			}
-			SMPPLOGGER.info("SMPP IOException : " + e.getMessage());
-
-		} catch (SMPPException e) {
-			if (SMPPLOGGER.isDebugEnabled()) {
-				SMPPLOGGER.debug("SMPP Exception : " + e.getMessage());
-			}
-
 			String message = e.getMessage();
-			if (SMPPLOGGER.isDebugEnabled()) {
-				SMPPLOGGER.debug("SMPPTalendRetrailStarter End with Exception : " + message);
+			if (SMPPTALENDRETRAIL.isDebugEnabled()) {
+				SMPPTALENDRETRAIL.debug("SMPP IOException : " + message);
 			}
-			if (SMPPLOGGER.isInfoEnabled()) {
-				SMPPLOGGER.info("Exception while reading " + message);
+			if (SMPPTALENDRETRAILREC.isInfoEnabled()) {
+				SMPPTALENDRETRAILREC.info("SMPP IOException : " + message);
+			}
+		} catch (SMPPException e) {
+			String message = e.getMessage();
+			if (SMPPTALENDRETRAIL.isDebugEnabled()) {
+				SMPPTALENDRETRAIL.debug("RetryToTalendEnd with Exception : " + message);
+			}
+			if (SMPPTALENDRETRAILREC.isInfoEnabled()) {
+				SMPPTALENDRETRAILREC.info("Exception while reading " + message);
 			}
 		}
 
