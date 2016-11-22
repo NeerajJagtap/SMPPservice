@@ -21,20 +21,24 @@ public class SmppBackendServiceImpl implements SmppBackendService {
 	@Autowired
 	private SmppBackendDao smppBackendDao;
 
-	Logger smpplogger = LogManager.getLogger("smpplogger");
+	private static final Logger SMPPDBCLEANERLOGGER = LogManager.getLogger("smppDBCleanerLogger");
+
+	private static final Logger SMPPTALENDRETRAIL = LogManager.getLogger("smppTalendRetrail");
+
+	private static final Logger SMPPREQRETRAIL = LogManager.getLogger("smppReqRetrail");
 
 	@Override
 	public void purgeSmppDB() throws SMPPException {
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("In SmppDBCleanServiceImpl : purgeSmppDB() ");
+		if (SMPPDBCLEANERLOGGER.isDebugEnabled()) {
+			SMPPDBCLEANERLOGGER.debug("In SmppDBCleanServiceImpl : purgeSmppDB() ");
 		}
 		smppBackendDao.purgeSmppDB();
 	}
-	
+
 	@Override
 	public List<SmppData> getRetryToTalendList() throws SMPPException {
-		if (smpplogger.isDebugEnabled()) {
-			smpplogger.debug("In SmppDBCleanServiceImpl : getRetryToTalendList() ");
+		if (SMPPTALENDRETRAIL.isDebugEnabled()) {
+			SMPPTALENDRETRAIL.debug("In SmppDBCleanServiceImpl : getRetryToTalendList() ");
 		}
 		return smppBackendDao.getRetryToTalendList();
 	}

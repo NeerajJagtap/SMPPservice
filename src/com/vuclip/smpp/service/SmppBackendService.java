@@ -10,7 +10,7 @@ import com.vuclip.smpp.orm.dto.SmppData;
 @Service
 public interface SmppBackendService {
 
-	public void purgeSmppDB() throws SMPPException;
+	void purgeSmppDB() throws SMPPException;
 
 	List<SmppData> getRetryToTalendList() throws SMPPException;
 

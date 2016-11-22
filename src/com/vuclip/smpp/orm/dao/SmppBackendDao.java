@@ -10,14 +10,11 @@ import com.vuclip.smpp.orm.dto.SmppData;
 
 @Component
 public interface SmppBackendDao {
-	
-	public void purgeSmppDB();
-	
-	
-	public void generateInfoLogs(Session session, String requestsInLast2HoursHQL,
-			String failRequestsOverLast2hours, String responseOKRequestsInLast2HoursHQL, String talendRespFailHQL)
-			throws Exception;
 
+	void purgeSmppDB();
+
+	void generateInfoLogs(Session session, String requestsInLast2HoursHQL, String failRequestsOverLast2hours,
+			String responseOKRequestsInLast2HoursHQL, String talendRespFailHQL) throws Exception;
 
 	List<SmppData> getRetryToTalendList() throws SMPPException;
 
