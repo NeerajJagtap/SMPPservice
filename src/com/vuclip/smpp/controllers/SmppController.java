@@ -189,11 +189,10 @@ public class SmppController {
 					SMPPLOGGER.debug("In SmppController: Data inserted into DB. " + smppData.toString());
 				}
 			} else {
-				smppData.setReqStatus("1");
 				smppData.setRespStatus(returnStatus + "");
-				smppService.update(smppData);
+				smppService.delete(smppData.getId());
 				if (SMPPLOGGER.isDebugEnabled()) {
-					SMPPLOGGER.debug("In SmppController: Data inserted into DB. " + smppData.toString());
+					SMPPLOGGER.debug("In SmppController: Data deleted from DB. " + smppData.toString());
 				}
 			}
 		}
