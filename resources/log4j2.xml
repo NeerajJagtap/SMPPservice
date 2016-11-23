@@ -2,9 +2,9 @@
 <Configuration status="WARN">
 
 	<Properties>
-		<Property name="log-path">logs/debuglogs</Property>
-		<Property name="dbCleaner-log-path">logs/debuglogs/dbCleaner</Property>
-		<Property name="talendRetry-log-path">logs/debuglogs/talendRetry</Property>
+		<Property name="log-path">logs/smpplogs</Property>
+		<Property name="dbCleaner-log-path">logs/smpplogs/dbCleaner</Property>
+		<Property name="talendRetry-log-path">logs/smpplogs/talendRetry</Property>
 	</Properties>
 
 	<Appenders>
@@ -22,9 +22,9 @@
 			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} 
 				- %msg%n" /> -->
 			<PatternLayout>
-				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]
-					-%m%n}{STYLE=Logback}</Pattern>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+				<!-- <Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t] -%m%n}{STYLE=Logback}</Pattern> -->
 			</PatternLayout>
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1"
@@ -53,9 +53,9 @@
 			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} 
 				- %msg%n" /> -->
 			<PatternLayout>
-				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]
-					-%m%n}{STYLE=Logback}</Pattern>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+				<!-- <Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t] -%m%n}{STYLE=Logback}</Pattern> -->
 			</PatternLayout>
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1"
@@ -84,9 +84,9 @@
 			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} 
 				- %msg%n" /> -->
 			<PatternLayout>
-				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]
-					-%m%n}{STYLE=Logback}</Pattern>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+				<!-- <Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t] -%m%n}{STYLE=Logback}</Pattern> -->
 			</PatternLayout>
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1"
@@ -113,12 +113,12 @@
 			filePattern="${sys:catalina.home}/${dbCleaner-log-path}/smpp_db_cleaner.log.%d{yyyy-MM-dd-HH}.gz"
 			append="true">
 			<PatternLayout>
-				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] -
-					[%t]-%m%n}{STYLE=Logback}</Pattern>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+				<!-- <Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]-%m%n}{STYLE=Logback}</Pattern> -->
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1"
+				<TimeBasedTriggeringPolicy interval="24"
 					modulate="true" />
 			</Policies>
 			<DefaultRolloverStrategy max="100" />
@@ -141,12 +141,12 @@
 			filePattern="${sys:catalina.home}/${dbCleaner-log-path}/smpp_requests_db_status.log.%d{yyyy-MM-dd-HH}.gz"
 			append="true">
 			<PatternLayout>
-				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] -
-					[%t]-%m%n}{STYLE=Logback}</Pattern>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+				<!-- <Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]-%m%n}{STYLE=Logback}</Pattern> -->
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1"
+				<TimeBasedTriggeringPolicy interval="24"
 					modulate="true" />
 			</Policies>
 			<DefaultRolloverStrategy max="100" />
@@ -169,12 +169,12 @@
 			filePattern="${sys:catalina.home}/${talendRetry-log-path}/smpp_talend_retrail.log.%d{yyyy-MM-dd-HH}.gz"
 			append="true">
 			<PatternLayout>
-				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] -
-					[%t]-%m%n}{STYLE=Logback}</Pattern>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+				<!-- <Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]-%m%n}{STYLE=Logback}</Pattern> -->
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1"
+				<TimeBasedTriggeringPolicy interval="24"
 					modulate="true" />
 			</Policies>
 			<DefaultRolloverStrategy max="100" />
@@ -197,12 +197,12 @@
 			filePattern="${sys:catalina.home}/${talendRetry-log-path}/smpp_talend_retrail_recs.log.%d{yyyy-MM-dd-HH}.gz"
 			append="true">
 			<PatternLayout>
-				<!-- <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern> -->
-				<Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] -
-					[%t]-%m%n}{STYLE=Logback}</Pattern>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+				<!-- <Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t]-%m%n}{STYLE=Logback}</Pattern> -->
 			</PatternLayout>
 			<Policies>
-				<TimeBasedTriggeringPolicy interval="1"
+				<TimeBasedTriggeringPolicy interval="24"
 					modulate="true" />
 			</Policies>
 			<DefaultRolloverStrategy max="100" />
