@@ -2,9 +2,9 @@
 <Configuration status="WARN">
 
 	<Properties>
-		<Property name="log-path">logs/debuglogs</Property>
-		<Property name="dbCleaner-log-path">logs/debuglogs/dbCleaner</Property>
-		<Property name="talendRetry-log-path">logs/debuglogs/talendRetry</Property>
+		<Property name="log-path">logs/smpplogs</Property>
+		<Property name="dbCleaner-log-path">logs/smpplogs/dbCleaner</Property>
+		<Property name="talendRetry-log-path">logs/smpplogs/talendRetry</Property>
 	</Properties>
 
 	<Appenders>
