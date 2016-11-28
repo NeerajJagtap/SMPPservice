@@ -107,6 +107,37 @@
 					onMismatch="NEUTRAL" />
 			</Filters>
 		</RollingFile>
+		
+		<RollingFile name="appender-mo-info"
+			fileName="${sys:catalina.home}/${log-path}/smpp_mo.log"
+			filePattern="${sys:catalina.home}/${log-path}/smpp_mo.log.%d{yyyy-MM-dd-HH}.gz"
+			append="true">
+			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} 
+				- %msg%n" /> -->
+			<PatternLayout>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+				<!-- <Pattern>%highlight{%d{ISO8601} %-5p [%c:%F:%L] - [%t] -%m%n}{STYLE=Logback}</Pattern> -->
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+				<!-- <SizeBasedTriggeringPolicy size="1 kB" /> -->
+			</Policies>
+			<DefaultRolloverStrategy max="100" />
+			<Filters>
+				<ThresholdFilter level="warn" onMatch="DENY"
+					onMismatch="NEUTRAL" />
+				<ThresholdFilter level="error" onMatch="DENY"
+					onMismatch="NEUTRAL" />
+				<ThresholdFilter level="fatal" onMatch="DENY"
+					onMismatch="NEUTRAL" />
+				<ThresholdFilter level="info" onMatch="ACCEPT"
+					onMismatch="DENY" />
+				<ThresholdFilter level="debug" onMatch="DENY"
+					onMismatch="NEUTRAL" />
+			</Filters>
+		</RollingFile>
 
 		<RollingFile name="appender-smpp-db-cleaner"
 			fileName="${sys:catalina.home}/${dbCleaner-log-path}/smpp_db_cleaner.log"
@@ -234,6 +265,10 @@
 
 		<AsyncLogger name="dnlogger" additivity="false" level="INFO">
 			<AppenderRef ref="appender-dn-info" level="INFO" />
+		</AsyncLogger>
+		
+		<AsyncLogger name="mologger" additivity="false" level="INFO">
+			<AppenderRef ref="appender-mo-info" level="INFO" />
 		</AsyncLogger>
 
 		<AsyncLogger name="smppDBCleanerLogger" additivity="false"

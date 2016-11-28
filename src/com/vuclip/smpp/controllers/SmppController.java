@@ -54,10 +54,42 @@ public class SmppController {
 	@Autowired
 	private SmppConfig smppConfig;
 
-	CoreSMPPHandler coreSMPPHandler = null;
+	CoreSMPPHandler coreSMPPHandlerActivation[] = null;
+
+	CoreSMPPHandler coreSMPPHandlerDeactivation[] = null;
+
+	CoreSMPPHandler coreSMPPHandlerRenewal[] = null;
+
+	CoreSMPPHandler coreSMPPHandlerOtherJobs[] = null;
+
+	int activations = 0, deactivations = 0, renewals = 0, others = 0;
 
 	@Autowired
 	private SmppService smppService;
+
+	public void initializeHandlers() {
+		if (null == coreSMPPHandlerActivation || null == coreSMPPHandlerDeactivation || null == coreSMPPHandlerRenewal
+				|| null == coreSMPPHandlerOtherJobs) {
+			coreSMPPHandlerActivation = new CoreSMPPHandler[10];
+			coreSMPPHandlerDeactivation = new CoreSMPPHandler[10];
+			coreSMPPHandlerRenewal = new CoreSMPPHandler[20];
+			coreSMPPHandlerOtherJobs = new CoreSMPPHandler[20];
+			try {
+				for (int i = 0; i < 10; i++) {
+					coreSMPPHandlerActivation[i] = new CoreSMPPHandler(smppProperties, smppService);
+					coreSMPPHandlerDeactivation[i] = new CoreSMPPHandler(smppProperties, smppService);
+					coreSMPPHandlerRenewal[i] = new CoreSMPPHandler(smppProperties, smppService);
+					coreSMPPHandlerOtherJobs[i] = new CoreSMPPHandler(smppProperties, smppService);
+				}
+				for (int i = 10; i < 20; i++) {
+					coreSMPPHandlerRenewal[i] = new CoreSMPPHandler(smppProperties, smppService);
+					coreSMPPHandlerOtherJobs[i] = new CoreSMPPHandler(smppProperties, smppService);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
@@ -73,6 +105,36 @@ public class SmppController {
 
 	@RequestMapping(value = "/sendsms", method = RequestMethod.GET)
 	public ResponseEntity<?> getResp(HttpServletRequest request, HttpServletResponse response) {
+		initializeHandlers();
+		String dlr = request.getParameter("dlr-url");
+		String dlrUrl = SmppUtil.decodeToUtf8(dlr);
+		String transactionId = SmppUtil.getTransactionIDForURL(dlrUrl);
+
+		if (transactionId.toCharArray()[0] == 'a') {
+			// Send Activation
+			if (activations == 10)
+				activations = 0;
+			return sendSMSProcess(request, dlr, coreSMPPHandlerActivation[activations++]);
+		} else if (transactionId.toCharArray()[0] == 'd') {
+			// Send Deactivation
+			if (deactivations == 10)
+				deactivations = 0;
+			return sendSMSProcess(request, dlr, coreSMPPHandlerDeactivation[deactivations++]);
+		} else if (transactionId.toCharArray()[0] == 'r') {
+			// Send Renewal
+			if (renewals == 20)
+				renewals = 0;
+			return sendSMSProcess(request, dlr, coreSMPPHandlerRenewal[renewals++]);
+		} else {
+			// Send To Other Job
+			if (others == 10)
+				others = 0;
+			return sendSMSProcess(request, dlr, coreSMPPHandlerOtherJobs[others++]);
+		}
+
+	}
+
+	private ResponseEntity<?> sendSMSProcess(HttpServletRequest request, String dlr, CoreSMPPHandler coreSMPPHandler) {
 		HttpStatus returnStatus = HttpStatus.GATEWAY_TIMEOUT;
 		if (SMPPLOGGER.isDebugEnabled()) {
 			SMPPLOGGER.debug("In SmppController: /sendsms processing Start for Request : "
@@ -82,7 +144,6 @@ public class SmppController {
 		String to = request.getParameter("to");
 		String from = request.getParameter("from");
 		String metaData = request.getParameter("meta-data");
-		String dlr = request.getParameter("dlr-url");
 		if (null != to && null != from && null != metaData && null != dlr) {
 			String dlrUrl = SmppUtil.decodeToUtf8(dlr);
 

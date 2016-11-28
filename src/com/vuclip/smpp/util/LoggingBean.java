@@ -221,11 +221,14 @@ public class LoggingBean {
 		stringBuilderListener.append("} \n\tDelivery Notification Response : {")
 				.append(deliveryNotificationTO.getResponseToCarrier());
 		stringBuilderListener.append("} \nListener End Time : [").append(dateFormat.format(dnReceivedTime));
-		stringBuilderListener.append("] \nTalend Request Start Time : [").append(dateFormat.format(talendRequestTime));
-		stringBuilderListener.append("] \n\tTalend Request : {").append(talendRequestURL);
-		stringBuilderListener.append("} \n\tTalend Response : {").append(talendResponse);
-		stringBuilderListener.append("} \nTalend Response Received Time : [")
-				.append(dateFormat.format(talendResponseTime)).append("]");
+		if (null != talendRequestTime) {
+			stringBuilderListener.append("] \nTalend Request Start Time : [")
+					.append(dateFormat.format(talendRequestTime));
+			stringBuilderListener.append("] \n\tTalend Request : {").append(talendRequestURL);
+			stringBuilderListener.append("} \n\tTalend Response : {").append(talendResponse);
+			stringBuilderListener.append("} \nTalend Response Received Time : [")
+					.append(dateFormat.format(talendResponseTime)).append("]");
+		}
 		stringBuilderListener.append(
 				"\n+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+\n");
 		return stringBuilderListener.toString();

@@ -329,7 +329,7 @@ public class CoreSMPPServiceImpl implements CoreSMPPService {
 					pdu = pduEvent.getPDU();
 				}
 			} else {
-				pdu = session.receive(100);
+				pdu = session.receive(1000);
 			}
 			// Take only Deliver SM
 			if (pdu != null && pdu.getCommandId() == Data.DELIVER_SM && pdu.getCommandStatus() == Data.ESME_ROK) {

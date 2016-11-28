@@ -29,7 +29,7 @@ public class CoreSMPPHandler {
 
 	private static final Logger DNLOGGER = LogManager.getLogger("dnlogger");
 
-	private static final Logger MOLOGGER = LogManager.getLogger("dnlogger");
+	private static final Logger MOLOGGER = LogManager.getLogger("mologger");
 
 	private CoreSMPPService coreSMPPService = null;
 
@@ -70,13 +70,14 @@ public class CoreSMPPHandler {
 			public void run() {
 				while (true) {
 					isReceiverActive = true;
-					try {
-						System.out.println("Sleep:100 Mili");
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-						SMPPLOGGER.debug("In CoreSMPPHandler:DN Listener Exception Wait : " + e.getMessage());
-					}
+					// try {
+					// System.out.println("Sleep:100 Mili");
+					// Thread.sleep(100);
+					// } catch (InterruptedException e) {
+					// e.printStackTrace();
+					// SMPPLOGGER.debug("In CoreSMPPHandler:DN Listener
+					// Exception Wait : " + e.getMessage());
+					// }
 					DeliveryNotificationTO dnto = listener();
 					responseReceivedTime = new Date();
 					if (null != dnto && Data.ESME_ROK == dnto.getDeliveryStatus()) {
